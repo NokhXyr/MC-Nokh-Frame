@@ -6,7 +6,7 @@ Nokh Frame est un mod client pour Minecraft **1.21.1** et NeoForge **21.1.250**.
 
 ## Utilisation
 
-1. Installer `nokhframe-0.5.2.jar` dans le dossier `mods`, puis lancer Minecraft.
+1. Installer `nokhframe-0.5.3.jar` dans le dossier `mods`, puis lancer Minecraft.
 2. Entrer dans un monde et activer les cosmétiques souhaités.
 3. Saisir **`/nokhframe`** dans le chat pour ouvrir le studio.
 4. Choisir **Joueur** ou **Item**. Le catalogue des items permet une recherche par nom ou identifiant (`modid:item`). Saisir `@nomdumod` pour filtrer par mod, éventuellement avec un nom d'item (`@minecraft épée`). Le bouton **Depuis l'inventaire** copie l'item choisi avec ses composants.
@@ -23,7 +23,7 @@ Les skins importés sont copiés dans `config/nokhframe/skins`. Seuls les PNG **
 
 ## Licence et communauté
 
-Nokh Frame est publié sous [licence propriétaire, tous droits réservés](LICENSE) par NokhXyr. Consultez les règles de [contribution](.github/CONTRIBUTING.md), le [code de conduite](.github/CODE_OF_CONDUCT.md) et la [politique de sécurité](.github/SECURITY.md).
+Nokh Frame est publié sous [licence propriétaire, tous droits réservés](LICENSE) par NokhXyr. Les JAR officiels non modifiés peuvent être inclus et redistribués dans les modpacks et launchers, y compris publics et monétisés, aux conditions de la licence. Consultez aussi les règles de [contribution](.github/CONTRIBUTING.md), le [code de conduite](.github/CODE_OF_CONDUCT.md) et la [politique de sécurité](.github/SECURITY.md).
 
 ## Développement
 
@@ -37,7 +37,7 @@ Nokh Frame is a client-side mod for Minecraft **1.21.1** and NeoForge **21.1.250
 
 ### How to use
 
-1. Put `nokhframe-0.5.2.jar` in the `mods` folder and start Minecraft.
+1. Put `nokhframe-0.5.3.jar` in the `mods` folder and start Minecraft.
 2. Join a world and enable the cosmetics you want to show.
 3. Enter **`/nokhframe`** in chat to open the studio.
 4. Choose **Player** or **Item**. Search the item catalog by display name or registry ID (`modid:item`). Type `@modname` to filter by mod, optionally followed by an item name (`@minecraft sword`). **From inventory** copies the selected stack with its data components.
@@ -54,7 +54,7 @@ Imported skins are copied to `config/nokhframe/skins`. Only **64 × 64 PNG** fil
 
 ### License and community
 
-Nokh Frame is published by NokhXyr under a [proprietary, all-rights-reserved license](LICENSE). See the [contribution guide](.github/CONTRIBUTING.md), [Code of Conduct](.github/CODE_OF_CONDUCT.md), and [Security Policy](.github/SECURITY.md).
+Nokh Frame is published by NokhXyr under a [proprietary, all-rights-reserved license](LICENSE). Official, unmodified JARs may be included and redistributed in modpacks and launchers, including public and monetized packs, under the license terms. See the [contribution guide](.github/CONTRIBUTING.md), [Code of Conduct](.github/CODE_OF_CONDUCT.md), and [Security Policy](.github/SECURITY.md).
 
 ### Development
 
