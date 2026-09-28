@@ -1,33 +1,26 @@
 package NokhXyr.NokhFrame;
 
-import com.mojang.blaze3d.platform.InputConstants;
-import net.minecraft.client.KeyMapping;
+import net.minecraft.commands.Commands;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
-import net.neoforged.bus.api.EventPriority;
-import org.lwjgl.glfw.GLFW;
 
 @Mod(value = NokhFrameMod.MOD_ID, dist = Dist.CLIENT)
 public final class NokhFrameClient {
-    private static final KeyMapping OPEN_STUDIO = new KeyMapping(
-            "key.nokhframe.open",
-            InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_F8,
-            "key.categories.nokhframe"
-    );
+    private boolean openRequested;
 
     public NokhFrameClient(IEventBus modBus) {
-        modBus.addListener(this::registerKeys);
+        NeoForge.EVENT_BUS.addListener(this::registerClientCommands);
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
         NeoForge.EVENT_BUS.addListener(this::afterScreenRender);
         NeoForge.EVENT_BUS.addListener(this::showNativeNameplate);
@@ -37,16 +30,19 @@ public final class NokhFrameClient {
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::endClientPreview);
     }
 
-    private void registerKeys(RegisterKeyMappingsEvent event) {
-        event.register(OPEN_STUDIO);
+    private void registerClientCommands(RegisterClientCommandsEvent event) {
+        event.getDispatcher().register(Commands.literal("nokhframe").executes(context -> {
+            openRequested = true;
+            return 1;
+        }));
     }
 
     private void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
-        while (OPEN_STUDIO.consumeClick()) {
-            if (minecraft.player != null && minecraft.screen == null) {
-                minecraft.setScreen(new StudioScreen());
-            }
+        if (minecraft.player == null) openRequested = false;
+        if (openRequested && minecraft.player != null && minecraft.screen == null) {
+            openRequested = false;
+            minecraft.setScreen(new StudioScreen());
         }
     }
 

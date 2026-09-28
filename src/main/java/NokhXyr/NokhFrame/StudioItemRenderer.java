@@ -37,7 +37,7 @@ public final class StudioItemRenderer {
             if (minecraft.player != null) {
                 Vec3 emissionCenter = minecraft.player.position()
                         .add(0.0, minecraft.player.getBbHeight() * 0.5, 0.0);
-                WorldParticleRenderer.render(graphics, emissionCenter, rotation, 0.9);
+                WorldParticleRenderer.render(graphics, emissionCenter, rotation, 2.0);
             }
         } finally {
             Lighting.setupFor3DItems();

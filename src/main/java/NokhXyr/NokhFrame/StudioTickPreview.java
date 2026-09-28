@@ -2,6 +2,7 @@ package NokhXyr.NokhFrame;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
@@ -10,6 +11,7 @@ public final class StudioTickPreview {
     private static boolean active;
     private static LocalPlayer player;
     private static ItemStack item = ItemStack.EMPTY;
+    private static ItemEntity previewEntity;
     private static StudioAvatarRenderer.Motion motion = StudioAvatarRenderer.Motion.IDLE;
     private static Vec3 movementOffset = Vec3.ZERO;
 
@@ -23,6 +25,10 @@ public final class StudioTickPreview {
         player = minecraft.player;
         if (studio.previewingItem()) {
             item = studio.previewItem().copy();
+            if (!item.isEmpty() && minecraft.level != null) {
+                Vec3 center = minecraft.player.position().add(0.0, minecraft.player.getBbHeight() * 0.5, 0.0);
+                previewEntity = new ItemEntity(minecraft.level, center.x, center.y, center.z, item.copy());
+            }
         } else {
             motion = studio.previewMotion();
             if (motion == StudioAvatarRenderer.Motion.WALK || motion == StudioAvatarRenderer.Motion.RUN
@@ -40,6 +46,7 @@ public final class StudioTickPreview {
         active = false;
         player = null;
         item = ItemStack.EMPTY;
+        previewEntity = null;
         motion = StudioAvatarRenderer.Motion.IDLE;
         movementOffset = Vec3.ZERO;
     }
@@ -54,6 +61,10 @@ public final class StudioTickPreview {
 
     public static ItemStack previewHeldItem() {
         return item;
+    }
+
+    public static ItemEntity previewItemEntity() {
+        return active ? previewEntity : null;
     }
 
     public static boolean isCrouching() {

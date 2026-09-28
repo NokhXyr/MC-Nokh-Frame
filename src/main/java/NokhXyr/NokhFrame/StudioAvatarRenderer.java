@@ -16,6 +16,7 @@ public final class StudioAvatarRenderer {
     private static boolean renderingMotion;
     private static boolean crouching;
     private static Motion currentMotion = Motion.IDLE;
+    private static float motionSeconds;
 
     private StudioAvatarRenderer() {
     }
@@ -46,6 +47,7 @@ public final class StudioAvatarRenderer {
         try {
             renderingMotion = true;
             currentMotion = motion;
+            motionSeconds = elapsedSeconds;
             crouching = motion == Motion.SNEAK;
             player.yBodyRot = playerYaw;
             player.yBodyRotO = playerYaw;
@@ -97,6 +99,7 @@ public final class StudioAvatarRenderer {
         } finally {
             renderingMotion = false;
             currentMotion = Motion.IDLE;
+            motionSeconds = 0.0F;
             player.yBodyRot = oldBody;
             player.yBodyRotO = oldBodyPrevious;
             player.setYRot(oldYaw);
@@ -127,6 +130,14 @@ public final class StudioAvatarRenderer {
 
     public static boolean isRunning() {
         return currentMotion == Motion.RUN;
+    }
+
+    public static Motion currentMotion() {
+        return currentMotion;
+    }
+
+    public static float motionSeconds() {
+        return motionSeconds;
     }
 
     public static Vec3 simulatedDelta() {
