@@ -60,6 +60,15 @@ public final class NokhFrameGameTests {
     }
 
     @GameTest(template = "empty", timeoutTicks = 20)
+    public static void backgroundImageDimensionsHaveLimits(GameTestHelper helper) {
+        helper.assertTrue(StudioRules.isSupportedBackgroundSize(1920, 1080), "Common background image should load");
+        helper.assertTrue(StudioRules.isSupportedBackgroundSize(4096, 4096), "Maximum allowed image should load");
+        helper.assertFalse(StudioRules.isSupportedBackgroundSize(0, 100), "Empty image should be rejected");
+        helper.assertFalse(StudioRules.isSupportedBackgroundSize(4097, 100), "Oversized image should be rejected");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
     public static void itemCatalogHasRegisteredItems(GameTestHelper helper) {
         helper.assertTrue(BuiltInRegistries.ITEM.getKey(Items.DIAMOND).toString().equals("minecraft:diamond"),
                 "Item catalog must use registry IDs for search");

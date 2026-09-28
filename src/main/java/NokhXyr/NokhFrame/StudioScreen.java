@@ -30,7 +30,10 @@ import java.util.stream.Stream;
 public final class StudioScreen extends Screen {
     private final Path skinDirectory = Minecraft.getInstance().gameDirectory.toPath()
             .resolve("config").resolve("nokhframe").resolve("skins");
+    private final Path backgroundDirectory = Minecraft.getInstance().gameDirectory.toPath()
+            .resolve("config").resolve("nokhframe").resolve("backgrounds");
     private final List<Path> skinFiles = new ArrayList<>();
+    private final List<Path> backgroundFiles = new ArrayList<>();
     private Component status = Component.empty();
     private int backgroundIndex;
     private @Nullable Integer customBackground;
@@ -47,13 +50,16 @@ public final class StudioScreen extends Screen {
     private ItemStack selectedStack = ItemStack.EMPTY;
     private boolean captureRequested;
     private @Nullable ResourceLocation customSkin;
-    private @Nullable Button backgroundButton;
+    private @Nullable ResourceLocation backgroundTexture;
+    private int backgroundWidth;
+    private int backgroundHeight;
     private @Nullable Button selectionButton;
     private @Nullable EditBox hexInput;
 
     public StudioScreen() {
         super(Component.translatable("screen.nokhframe.title"));
         reloadSkins();
+        reloadBackgrounds();
     }
 
     @Override
@@ -81,11 +87,17 @@ public final class StudioScreen extends Screen {
             button.setMessage(motionLabel());
         }).bounds(x, y + row * 2, buttonWidth, 20).build());
 
-        this.backgroundButton = this.addRenderableWidget(Button.builder(backgroundLabel(), button -> {
+        int half = (buttonWidth - 4) / 2;
+        this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.color"), button -> {
+            releaseBackground();
             customBackground = null;
             backgroundIndex = StudioRules.nextBackground(backgroundIndex);
-            button.setMessage(backgroundLabel());
-        }).bounds(x, y + row * 3, buttonWidth, 20).build());
+            status = Component.translatable("status.nokhframe.background_color",
+                    Component.translatable("background.nokhframe." + StudioRules.BACKGROUNDS.get(backgroundIndex).name()));
+        }).bounds(x, y + row * 3, half, 20).build());
+        this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.image"), button ->
+                this.minecraft.setScreen(new StudioBackgroundScreen(this)))
+                .bounds(x + half + 4, y + row * 3, buttonWidth - half - 4, 20).build());
 
         int applyWidth = 52;
         this.hexInput = new EditBox(this.font, x, y + row * 4, buttonWidth - applyWidth - 4, 20,
@@ -97,7 +109,6 @@ public final class StudioScreen extends Screen {
         this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.apply"), button -> applyHex())
                 .bounds(x + buttonWidth - applyWidth, y + row * 4, applyWidth, 20).build());
 
-        int half = (buttonWidth - 4) / 2;
         this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.left"), button -> yaw -= 30.0F)
                 .bounds(x, y + row * 5, half, 20).build());
         this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.right"), button -> yaw += 30.0F)
@@ -110,7 +121,7 @@ public final class StudioScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         boolean photo = captureRequested;
-        graphics.fill(0, 0, this.width, this.height, backgroundColor());
+        renderStageBackground(graphics);
         int stageRight = photo ? this.width : this.width - panelWidth();
         if (itemMode) renderItem(graphics, stageRight);
         else renderAvatar(graphics, stageRight);
@@ -174,6 +185,22 @@ public final class StudioScreen extends Screen {
         return customBackground == null ? StudioRules.BACKGROUNDS.get(backgroundIndex).color() : customBackground;
     }
 
+    private void renderStageBackground(GuiGraphics graphics) {
+        graphics.fill(0, 0, this.width, this.height, backgroundColor());
+        if (backgroundTexture == null) return;
+        float scale = Math.max((float) this.width / backgroundWidth, (float) this.height / backgroundHeight);
+        graphics.pose().pushPose();
+        try {
+            graphics.pose().translate((this.width - backgroundWidth * scale) / 2.0F,
+                    (this.height - backgroundHeight * scale) / 2.0F, 0.0F);
+            graphics.pose().scale(scale, scale, 1.0F);
+            graphics.blit(backgroundTexture, 0, 0, 0.0F, 0.0F,
+                    backgroundWidth, backgroundHeight, backgroundWidth, backgroundHeight);
+        } finally {
+            graphics.pose().popPose();
+        }
+    }
+
     private void applyHex() {
         if (hexInput == null) return;
         OptionalInt parsed = StudioRules.parseHexColor(hexInput.getValue());
@@ -181,9 +208,9 @@ public final class StudioScreen extends Screen {
             status = Component.translatable("status.nokhframe.invalid_hex");
             return;
         }
+        releaseBackground();
         customBackground = parsed.getAsInt();
         status = Component.translatable("status.nokhframe.hex_applied");
-        if (backgroundButton != null) backgroundButton.setMessage(backgroundLabel());
     }
 
     private Component modeLabel() {
@@ -203,15 +230,13 @@ public final class StudioScreen extends Screen {
                 Component.translatable("motion.nokhframe." + motion.name().toLowerCase(Locale.ROOT)));
     }
 
-    private Component backgroundLabel() {
-        Component value = customBackground == null
-                ? Component.translatable("background.nokhframe." + StudioRules.BACKGROUNDS.get(backgroundIndex).name())
-                : Component.literal(String.format("#%06X", customBackground & 0xFFFFFF));
-        return Component.translatable("button.nokhframe.background", value);
-    }
-
     List<Path> skinFiles() {
         return List.copyOf(skinFiles);
+    }
+
+    List<Path> backgroundFiles() {
+        reloadBackgrounds();
+        return List.copyOf(backgroundFiles);
     }
 
     Component statusMessage() {
@@ -329,6 +354,94 @@ public final class StudioScreen extends Screen {
         }
     }
 
+    boolean importBackground(Path source) {
+        Path normalizedSource = source.toAbsolutePath().normalize();
+        if (!StudioRules.isSkinFile(normalizedSource) || !Files.isRegularFile(normalizedSource)) {
+            status = Component.translatable("status.nokhframe.invalid_background_file");
+            return false;
+        }
+        try {
+            if (Files.size(normalizedSource) > 16L * 1024L * 1024L) {
+                status = Component.translatable("status.nokhframe.invalid_background_size");
+                return false;
+            }
+            try (InputStream input = Files.newInputStream(normalizedSource); NativeImage image = NativeImage.read(input)) {
+                if (!StudioRules.isSupportedBackgroundSize(image.getWidth(), image.getHeight())) {
+                    status = Component.translatable("status.nokhframe.invalid_background_size");
+                    return false;
+                }
+            }
+            Files.createDirectories(backgroundDirectory);
+            String fileName = normalizedSource.getFileName().toString();
+            Path destination = backgroundDirectory.resolve(fileName);
+            if (!Files.isSameFile(normalizedSource.getParent(), backgroundDirectory)) {
+                String stem = fileName.substring(0, fileName.lastIndexOf('.'));
+                int suffix = 2;
+                while (Files.exists(destination)) destination = backgroundDirectory.resolve(stem + "-" + suffix++ + ".png");
+                Files.copy(normalizedSource, destination);
+            }
+            return selectBackground(destination);
+        } catch (IOException | RuntimeException exception) {
+            status = Component.translatable("status.nokhframe.import_background_error");
+            return false;
+        }
+    }
+
+    boolean selectBackground(Path path) {
+        Path normalized = path.toAbsolutePath().normalize();
+        if (!StudioRules.isSkinFile(normalized) || !Files.isRegularFile(normalized)) {
+            status = Component.translatable("status.nokhframe.invalid_background_file");
+            return false;
+        }
+        try {
+            if (Files.size(normalized) > 16L * 1024L * 1024L) {
+                status = Component.translatable("status.nokhframe.invalid_background_size");
+                return false;
+            }
+            try (InputStream input = Files.newInputStream(normalized)) {
+                NativeImage image = NativeImage.read(input);
+                if (!StudioRules.isSupportedBackgroundSize(image.getWidth(), image.getHeight())) {
+                    image.close();
+                    status = Component.translatable("status.nokhframe.invalid_background_size");
+                    return false;
+                }
+                try {
+                    DynamicTexture texture = new DynamicTexture(image);
+                    texture.setFilter(true, false);
+                    releaseBackground();
+                    ResourceLocation location = ResourceLocation.fromNamespaceAndPath(NokhFrameMod.MOD_ID, "background_preview");
+                    Minecraft.getInstance().getTextureManager().register(location, texture);
+                    backgroundTexture = location;
+                    backgroundWidth = image.getWidth();
+                    backgroundHeight = image.getHeight();
+                    reloadBackgrounds();
+                    status = Component.translatable("status.nokhframe.background_selected", normalized.getFileName().toString());
+                    return true;
+                } catch (RuntimeException exception) {
+                    image.close();
+                    throw exception;
+                }
+            }
+        } catch (IOException | RuntimeException exception) {
+            status = Component.translatable("status.nokhframe.background_load_error");
+            return false;
+        }
+    }
+
+    private void reloadBackgrounds() {
+        backgroundFiles.clear();
+        try {
+            Files.createDirectories(backgroundDirectory);
+            try (Stream<Path> files = Files.list(backgroundDirectory)) {
+                files.filter(Files::isRegularFile).filter(StudioRules::isSkinFile)
+                        .sorted(Comparator.comparing(path -> path.getFileName().toString().toLowerCase(Locale.ROOT)))
+                        .forEach(backgroundFiles::add);
+            }
+        } catch (IOException exception) {
+            status = Component.translatable("status.nokhframe.background_folder_error");
+        }
+    }
+
     private void reloadSkins() {
         Path previous = skinIndex >= 0 && skinIndex < skinFiles.size() ? skinFiles.get(skinIndex) : null;
         skinFiles.clear();
@@ -386,6 +499,13 @@ public final class StudioScreen extends Screen {
         }
     }
 
+    private void releaseBackground() {
+        if (backgroundTexture != null) {
+            Minecraft.getInstance().getTextureManager().release(backgroundTexture);
+            backgroundTexture = null;
+        }
+    }
+
     private int panelWidth() {
         return Math.min(180, Math.max(136, this.width / 3));
     }
@@ -408,6 +528,7 @@ public final class StudioScreen extends Screen {
     @Override
     public void onClose() {
         releaseSkin();
+        releaseBackground();
         super.onClose();
     }
 

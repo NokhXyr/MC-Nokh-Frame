@@ -1,0 +1,42 @@
+package NokhXyr.NokhFrame.mixin;
+
+import NokhXyr.NokhFrame.StudioAvatarRenderer;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.model.AgeableListModel;
+import net.minecraft.client.model.PlayerModel;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+/** Applies the studio pose after model setup, immediately before drawing the player. */
+@Mixin(AgeableListModel.class)
+public abstract class StudioPlayerModelRenderMixin {
+    @Inject(method = "renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V",
+            at = @At("HEAD"))
+    private void nokhframe$renderMotion(PoseStack pose, VertexConsumer vertices, int light, int overlay,
+                                        int color, CallbackInfo info) {
+        if (!StudioAvatarRenderer.isRenderingMotion() || !((Object) this instanceof PlayerModel<?> model)) return;
+        StudioAvatarRenderer.Motion motion = StudioAvatarRenderer.currentMotion();
+        if (motion != StudioAvatarRenderer.Motion.WALK && motion != StudioAvatarRenderer.Motion.RUN
+                && motion != StudioAvatarRenderer.Motion.SNEAK) return;
+
+        float seconds = StudioAvatarRenderer.motionSeconds();
+        float frequency = motion == StudioAvatarRenderer.Motion.RUN ? 17.0F : 11.0F;
+        float amplitude = switch (motion) {
+            case RUN -> 1.0F;
+            case SNEAK -> 0.35F;
+            default -> 0.7F;
+        };
+        float swing = (float) Math.cos(seconds * frequency) * amplitude;
+        model.rightArm.xRot = -swing + (motion == StudioAvatarRenderer.Motion.SNEAK ? 0.4F : 0.0F);
+        model.leftArm.xRot = swing + (motion == StudioAvatarRenderer.Motion.SNEAK ? 0.4F : 0.0F);
+        model.rightLeg.xRot = swing;
+        model.leftLeg.xRot = -swing;
+        model.rightSleeve.copyFrom(model.rightArm);
+        model.leftSleeve.copyFrom(model.leftArm);
+        model.rightPants.copyFrom(model.rightLeg);
+        model.leftPants.copyFrom(model.leftLeg);
+    }
+}

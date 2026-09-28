@@ -34,6 +34,10 @@ public final class StudioRules {
         return width == 64 && height == 64;
     }
 
+    public static boolean isSupportedBackgroundSize(int width, int height) {
+        return width > 0 && height > 0 && width <= 4096 && height <= 4096;
+    }
+
     public static OptionalInt parseHexColor(String input) {
         String value = input.trim();
         if (value.startsWith("#")) {
