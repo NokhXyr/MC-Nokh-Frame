@@ -13,6 +13,8 @@ import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.TriState;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.bus.api.EventPriority;
 import org.lwjgl.glfw.GLFW;
 
 @Mod(value = NokhFrameMod.MOD_ID, dist = Dist.CLIENT)
@@ -29,6 +31,10 @@ public final class NokhFrameClient {
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
         NeoForge.EVENT_BUS.addListener(this::afterScreenRender);
         NeoForge.EVENT_BUS.addListener(this::showNativeNameplate);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, this::beginLevelPreview);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::endLevelPreview);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, this::beginClientPreview);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::endClientPreview);
     }
 
     private void registerKeys(RegisterKeyMappingsEvent event) {
@@ -42,6 +48,22 @@ public final class NokhFrameClient {
                 minecraft.setScreen(new StudioScreen());
             }
         }
+    }
+
+    private void beginLevelPreview(LevelTickEvent.Post event) {
+        if (event.getLevel().isClientSide()) StudioTickPreview.begin();
+    }
+
+    private void endLevelPreview(LevelTickEvent.Post event) {
+        if (event.getLevel().isClientSide()) StudioTickPreview.clear();
+    }
+
+    private void beginClientPreview(ClientTickEvent.Post event) {
+        StudioTickPreview.begin();
+    }
+
+    private void endClientPreview(ClientTickEvent.Post event) {
+        StudioTickPreview.clear();
     }
 
     private void afterScreenRender(ScreenEvent.Render.Post event) {

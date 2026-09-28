@@ -24,14 +24,17 @@ public final class WorldParticleRenderer {
     }
 
     public static void render(GuiGraphics graphics, LocalPlayer player, Quaternionf sceneRotation) {
+        render(graphics, player.position(), sceneRotation, 4.0);
+    }
+
+    public static void render(GuiGraphics graphics, Vec3 origin, Quaternionf sceneRotation, double radius) {
         Minecraft minecraft = Minecraft.getInstance();
         if (failed || minecraft.level == null) return;
 
-        Vec3 origin = player.position();
         Quaternionf orientation = new Quaternionf(sceneRotation).conjugate().rotateY((float) Math.PI);
         Camera camera = new PreviewCamera(origin, orientation);
-        AABB bounds = new AABB(origin.x - 4, origin.y - 3, origin.z - 4,
-                origin.x + 4, origin.y + 5, origin.z + 4);
+        AABB bounds = new AABB(origin.x - radius, origin.y - radius, origin.z - radius,
+                origin.x + radius, origin.y + radius, origin.z + radius);
         Frustum frustum = new Frustum(new Matrix4f(), new Matrix4f()) {
             @Override
             public boolean isVisible(AABB box) {

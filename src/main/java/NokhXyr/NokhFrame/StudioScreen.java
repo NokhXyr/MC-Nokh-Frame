@@ -239,6 +239,18 @@ public final class StudioScreen extends Screen {
         status = Component.translatable("status.nokhframe.item_selected");
     }
 
+    boolean previewingItem() {
+        return itemMode;
+    }
+
+    ItemStack previewItem() {
+        return selectedStack;
+    }
+
+    StudioAvatarRenderer.Motion previewMotion() {
+        return motion;
+    }
+
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if ((button == 0 || button == 1) && mouseX >= 0 && mouseX < this.width - panelWidth()) {

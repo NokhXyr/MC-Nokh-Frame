@@ -1,13 +1,14 @@
 package NokhXyr.NokhFrame;
 
 import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionf;
 
 public final class StudioItemRenderer {
     private StudioItemRenderer() {
@@ -23,13 +24,21 @@ public final class StudioItemRenderer {
         try {
             graphics.pose().translate(stageRight / 2.0F, height / 2.0F, 150.0F);
             graphics.pose().scale(size, -size, size);
-            graphics.pose().mulPose(Axis.YP.rotationDegrees(yaw));
-            graphics.pose().mulPose(Axis.XP.rotationDegrees(pitch));
-            graphics.pose().mulPose(Axis.ZP.rotationDegrees(roll));
+            Quaternionf rotation = new Quaternionf()
+                    .rotateY((float) Math.toRadians(yaw))
+                    .rotateX((float) Math.toRadians(pitch))
+                    .rotateZ((float) Math.toRadians(roll));
+            graphics.pose().mulPose(rotation);
             if (!model.usesBlockLight()) Lighting.setupForFlatItems();
             minecraft.getItemRenderer().render(stack, ItemDisplayContext.GUI, false, graphics.pose(),
                     graphics.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, model);
             graphics.flush();
+            Lighting.setupFor3DItems();
+            if (minecraft.player != null) {
+                Vec3 emissionCenter = minecraft.player.position()
+                        .add(0.0, minecraft.player.getBbHeight() * 0.5, 0.0);
+                WorldParticleRenderer.render(graphics, emissionCenter, rotation, 0.9);
+            }
         } finally {
             Lighting.setupFor3DItems();
             graphics.pose().popPose();

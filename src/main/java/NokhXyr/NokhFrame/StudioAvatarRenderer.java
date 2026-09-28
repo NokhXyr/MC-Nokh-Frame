@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.WalkAnimationState;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -14,6 +15,7 @@ public final class StudioAvatarRenderer {
 
     private static boolean renderingMotion;
     private static boolean crouching;
+    private static Motion currentMotion = Motion.IDLE;
 
     private StudioAvatarRenderer() {
     }
@@ -24,9 +26,14 @@ public final class StudioAvatarRenderer {
         float oldBody = player.yBodyRot;
         float oldBodyPrevious = player.yBodyRotO;
         float oldYaw = player.getYRot();
+        float oldYawPrevious = player.yRotO;
         float oldHead = player.yHeadRot;
         float oldHeadPrevious = player.yHeadRotO;
         float oldPitch = player.getXRot();
+        float oldPitchPrevious = player.xRotO;
+        double oldXPrevious = player.xOld;
+        double oldYPrevious = player.yOld;
+        double oldZPrevious = player.zOld;
         float oldAttack = player.attackAnim;
         float oldAttackPrevious = player.oAttackAnim;
         WalkAnimationState walk = player.walkAnimation;
@@ -38,13 +45,19 @@ public final class StudioAvatarRenderer {
         graphics.enableScissor(left, top, right, bottom);
         try {
             renderingMotion = true;
+            currentMotion = motion;
             crouching = motion == Motion.SNEAK;
             player.yBodyRot = playerYaw;
             player.yBodyRotO = playerYaw;
             player.setYRot(playerYaw);
+            player.yRotO = playerYaw;
             player.yHeadRot = playerYaw;
             player.yHeadRotO = playerYaw;
             player.setXRot(0.0F);
+            player.xRotO = 0.0F;
+            player.xOld = player.getX();
+            player.yOld = player.getY();
+            player.zOld = player.getZ();
             float speed = switch (motion) {
                 case WALK -> 0.6F;
                 case RUN -> 1.0F;
@@ -83,12 +96,18 @@ public final class StudioAvatarRenderer {
             }
         } finally {
             renderingMotion = false;
+            currentMotion = Motion.IDLE;
             player.yBodyRot = oldBody;
             player.yBodyRotO = oldBodyPrevious;
             player.setYRot(oldYaw);
+            player.yRotO = oldYawPrevious;
             player.yHeadRot = oldHead;
             player.yHeadRotO = oldHeadPrevious;
             player.setXRot(oldPitch);
+            player.xRotO = oldPitchPrevious;
+            player.xOld = oldXPrevious;
+            player.yOld = oldYPrevious;
+            player.zOld = oldZPrevious;
             player.attackAnim = oldAttack;
             player.oAttackAnim = oldAttackPrevious;
             walk.setSpeed(oldWalkSpeed);
@@ -104,5 +123,22 @@ public final class StudioAvatarRenderer {
 
     public static boolean isCrouching() {
         return crouching;
+    }
+
+    public static boolean isRunning() {
+        return currentMotion == Motion.RUN;
+    }
+
+    public static Vec3 simulatedDelta() {
+        return simulatedDelta(currentMotion);
+    }
+
+    public static Vec3 simulatedDelta(Motion motion) {
+        return switch (motion) {
+            case WALK -> new Vec3(0.0, 0.0, -0.12);
+            case RUN -> new Vec3(0.0, 0.0, -0.26);
+            case SNEAK -> new Vec3(0.0, 0.0, -0.06);
+            default -> Vec3.ZERO;
+        };
     }
 }
