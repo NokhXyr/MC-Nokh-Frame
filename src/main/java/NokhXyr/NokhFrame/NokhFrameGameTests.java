@@ -68,4 +68,17 @@ public final class NokhFrameGameTests {
         helper.succeed();
     }
 
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void itemCatalogFiltersModAndName(GameTestHelper helper) {
+        helper.assertTrue(StudioRules.matchesItemQuery("Diamond Sword", "minecraft:diamond_sword", "@minecraft sword"),
+                "Mod filter and item name should combine");
+        helper.assertTrue(StudioRules.matchesItemQuery("Copper Gadget", "create:copper_gadget", "@crea copper"),
+                "Mod filter should accept a partial namespace");
+        helper.assertFalse(StudioRules.matchesItemQuery("Diamond Sword", "minecraft:diamond_sword", "@create"),
+                "Other mod namespaces should not match");
+        helper.assertFalse(StudioRules.matchesItemQuery("Diamond Sword", "minecraft:diamond_sword", "@minecraft axe"),
+                "Text must match the item name or ID");
+        helper.succeed();
+    }
+
 }

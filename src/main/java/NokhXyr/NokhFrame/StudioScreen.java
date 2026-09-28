@@ -11,6 +11,7 @@ import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -34,11 +35,15 @@ public final class StudioScreen extends Screen {
     private int backgroundIndex;
     private @Nullable Integer customBackground;
     private int skinIndex = -1;
-    private float angle;
+    private float yaw;
+    private float pitch;
+    private float roll;
+    private boolean draggingPreview;
+    private int dragButton;
     private StudioAvatarRenderer.Motion motion = StudioAvatarRenderer.Motion.IDLE;
     private long motionStarted = System.nanoTime();
     private boolean itemMode;
-    private @Nullable Item selectedItem;
+    private ItemStack selectedStack = ItemStack.EMPTY;
     private boolean captureRequested;
     private @Nullable ResourceLocation customSkin;
     private @Nullable Button backgroundButton;
@@ -92,9 +97,9 @@ public final class StudioScreen extends Screen {
                 .bounds(x + buttonWidth - applyWidth, y + row * 4, applyWidth, 20).build());
 
         int half = (buttonWidth - 4) / 2;
-        this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.left"), button -> angle -= 1.5F)
+        this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.left"), button -> yaw -= 30.0F)
                 .bounds(x, y + row * 5, half, 20).build());
-        this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.right"), button -> angle += 1.5F)
+        this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.right"), button -> yaw += 30.0F)
                 .bounds(x + half + 4, y + row * 5, buttonWidth - half - 4, 20).build());
 
         this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.photo"), button ->
@@ -114,17 +119,22 @@ public final class StudioScreen extends Screen {
             graphics.fill(panelLeft, 0, this.width, this.height, 0xEF171B22);
             graphics.drawString(this.font, this.title, panelLeft + 8, 10, 0xFFFFFFFF, false);
             String name = itemMode
-                    ? selectedItem == null ? "" : new ItemStack(selectedItem).getHoverName().getString()
+                    ? selectedStack.isEmpty() ? "" : selectedStack.getHoverName().getString()
                     : Minecraft.getInstance().player == null ? "" : Minecraft.getInstance().player.getDisplayName().getString();
             graphics.drawString(this.font, this.font.plainSubstrByWidth(name, panelWidth() - 16),
                     panelLeft + 8, 26, 0xFFE7EDF3, false);
-            String detail = itemMode ? selectedItem == null ? "" : BuiltInRegistries.ITEM.getKey(selectedItem).toString()
+            String detail = itemMode ? selectedStack.isEmpty() ? "" : BuiltInRegistries.ITEM.getKey(selectedStack.getItem()).toString()
                     : skinIndex < 0 ? Component.translatable("skin.nokhframe.current").getString()
                     : skinFiles.get(skinIndex).getFileName().toString();
             graphics.drawString(this.font, this.font.plainSubstrByWidth(detail, panelWidth() - 16),
                     panelLeft + 8, 40, 0xFFB7C3CF, false);
             graphics.drawString(this.font, this.font.plainSubstrByWidth(status.getString(), panelWidth() - 16),
                     panelLeft + 8, this.height - 17, 0xFFDDE5EC, false);
+            Component hint = Component.translatable("label.nokhframe.rotate_hint");
+            int hintWidth = Math.min(stageRight - 16, this.font.width(hint) + 12);
+            graphics.fill(8, this.height - 22, 8 + hintWidth, this.height - 6, 0xB0171B22);
+            graphics.drawString(this.font, this.font.plainSubstrByWidth(hint.getString(), hintWidth - 10),
+                    13, this.height - 18, 0xFFFFFFFF, false);
             super.render(graphics, mouseX, mouseY, partialTick);
         }
     }
@@ -143,27 +153,19 @@ public final class StudioScreen extends Screen {
         try {
             float elapsed = (System.nanoTime() - motionStarted) / 1_000_000_000.0F;
             StudioAvatarRenderer.render(graphics, minecraft.player, margin, 8, stageRight - margin,
-                    Math.max(80, this.height - 12), scale, angle, motion, elapsed);
+                    Math.max(80, this.height - 12), scale, yaw, pitch, roll, motion, elapsed);
         } finally {
             SkinOverride.end();
         }
     }
 
     private void renderItem(GuiGraphics graphics, int stageRight) {
-        if (selectedItem == null) {
+        if (selectedStack.isEmpty()) {
             Component hint = Component.translatable("label.nokhframe.choose_item");
             graphics.drawCenteredString(this.font, hint, stageRight / 2, this.height / 2, 0xFF30363D);
             return;
         }
-        int size = Math.max(4, Math.min(stageRight / 24, this.height / 24));
-        graphics.pose().pushPose();
-        try {
-            graphics.pose().translate(stageRight / 2.0F - 8.0F * size, this.height / 2.0F - 8.0F * size, 100.0F);
-            graphics.pose().scale(size, size, size);
-            graphics.renderItem(new ItemStack(selectedItem), 0, 0);
-        } finally {
-            graphics.pose().popPose();
-        }
+        StudioItemRenderer.render(graphics, selectedStack, stageRight, this.height, yaw, pitch, roll, 1.0F);
     }
 
     private int backgroundColor() {
@@ -226,9 +228,47 @@ public final class StudioScreen extends Screen {
     }
 
     void selectItem(Item item) {
-        selectedItem = item;
+        selectItem(new ItemStack(item));
+    }
+
+    void selectItem(ItemStack stack) {
+        selectedStack = stack.copy();
         itemMode = true;
         status = Component.translatable("status.nokhframe.item_selected");
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if ((button == 0 || button == 1) && mouseX >= 0 && mouseX < this.width - panelWidth()) {
+            draggingPreview = true;
+            dragButton = button;
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (draggingPreview && button == dragButton) {
+            if (button == 1 || hasShiftDown()) {
+                roll = Mth.wrapDegrees(roll + (float) dragX * 0.8F);
+                pitch = Mth.wrapDegrees(pitch + (float) dragY * 0.8F);
+            } else {
+                yaw = Mth.wrapDegrees(yaw + (float) dragX * 0.8F);
+                pitch = Mth.wrapDegrees(pitch + (float) dragY * 0.8F);
+            }
+            return true;
+        }
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (draggingPreview && button == dragButton) {
+            draggingPreview = false;
+            return true;
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     boolean importSkin(Path source) {

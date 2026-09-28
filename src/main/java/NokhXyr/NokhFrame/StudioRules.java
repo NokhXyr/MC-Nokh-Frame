@@ -45,6 +45,21 @@ public final class StudioRules {
         return OptionalInt.of(0xFF000000 | Integer.parseInt(value, 16));
     }
 
+    public static boolean matchesItemQuery(String name, String registryId, String query) {
+        String lowerName = name.toLowerCase(Locale.ROOT);
+        String lowerId = registryId.toLowerCase(Locale.ROOT);
+        String namespace = lowerId.substring(0, lowerId.indexOf(':'));
+        for (String term : query.trim().toLowerCase(Locale.ROOT).split("\\s+")) {
+            if (term.isEmpty()) continue;
+            if (term.startsWith("@")) {
+                if (!namespace.contains(term.substring(1))) return false;
+            } else if (!lowerName.contains(term) && !lowerId.contains(term)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static SkinShape skinShape(String fileName) {
         String lower = fileName.toLowerCase(Locale.ROOT);
         if (lower.contains("_slim")) {

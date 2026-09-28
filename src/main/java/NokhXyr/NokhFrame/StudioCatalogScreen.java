@@ -88,8 +88,11 @@ public final class StudioCatalogScreen extends Screen {
             this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.back"), button -> onClose())
                     .bounds(x + width / 2 + 2, navY + 48, width / 2 - 2, 20).build());
         } else {
+            this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.inventory"), button ->
+                    this.minecraft.setScreen(new StudioInventoryScreen(parent)))
+                    .bounds(x, navY + 24, width / 2 - 2, 20).build());
             this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.back"), button -> onClose())
-                    .bounds(x, navY + 24, width, 20).build());
+                    .bounds(x + width / 2 + 2, navY + 24, width / 2 - 2, 20).build());
         }
         refreshRows();
     }
@@ -98,7 +101,8 @@ public final class StudioCatalogScreen extends Screen {
         filtered.clear();
         String needle = query.trim().toLowerCase(Locale.ROOT);
         for (Entry entry : all) {
-            if (entry.name().toLowerCase(Locale.ROOT).contains(needle) || entry.id().toLowerCase(Locale.ROOT).contains(needle)) {
+            if (items ? StudioRules.matchesItemQuery(entry.name(), entry.id(), needle)
+                    : entry.name().toLowerCase(Locale.ROOT).contains(needle)) {
                 filtered.add(entry);
             }
         }

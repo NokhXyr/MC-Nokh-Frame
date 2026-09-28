@@ -3,6 +3,6 @@
   "minVersion": "0.8",
   "package": "NokhXyr.NokhFrame.mixin",
   "compatibilityLevel": "JAVA_21",
-  "client": ["ClientPlayerSkinMixin", "WalkAnimationStateAccessor", "StudioCrouchMixin"],
+  "client": ["ClientPlayerSkinMixin", "WalkAnimationStateAccessor", "StudioCrouchMixin", "ParticleEngineAccessor"],
   "injectors": {"defaultRequire": 1}
 }

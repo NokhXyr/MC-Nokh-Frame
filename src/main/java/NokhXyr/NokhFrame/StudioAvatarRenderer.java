@@ -19,8 +19,8 @@ public final class StudioAvatarRenderer {
     }
 
     public static void render(GuiGraphics graphics, LocalPlayer player, int left, int top, int right, int bottom,
-                              int scale, float angle, Motion motion, float elapsedSeconds) {
-        float yaw = 180.0F + angle * 20.0F;
+                              int scale, float yaw, float pitch, float roll, Motion motion, float elapsedSeconds) {
+        float playerYaw = 180.0F;
         float oldBody = player.yBodyRot;
         float oldBodyPrevious = player.yBodyRotO;
         float oldYaw = player.getYRot();
@@ -39,11 +39,11 @@ public final class StudioAvatarRenderer {
         try {
             renderingMotion = true;
             crouching = motion == Motion.SNEAK;
-            player.yBodyRot = yaw;
-            player.yBodyRotO = yaw;
-            player.setYRot(yaw);
-            player.yHeadRot = yaw;
-            player.yHeadRotO = yaw;
+            player.yBodyRot = playerYaw;
+            player.yBodyRotO = playerYaw;
+            player.setYRot(playerYaw);
+            player.yHeadRot = playerYaw;
+            player.yHeadRotO = playerYaw;
             player.setXRot(0.0F);
             float speed = switch (motion) {
                 case WALK -> 0.6F;
@@ -61,10 +61,23 @@ public final class StudioAvatarRenderer {
 
             float entityScale = player.getScale();
             Vector3f translate = new Vector3f(0.0F, player.getBbHeight() / 2.0F + 0.0625F * entityScale, 0.0F);
-            Quaternionf camera = new Quaternionf();
+            Quaternionf camera = new Quaternionf()
+                    .rotateY((float) Math.toRadians(yaw))
+                    .rotateX((float) Math.toRadians(pitch))
+                    .rotateZ((float) Math.toRadians(roll));
             Quaternionf pose = new Quaternionf().rotateZ((float) Math.PI).mul(camera);
             InventoryScreen.renderEntityInInventory(graphics, (left + right) / 2.0F, (top + bottom) / 2.0F,
                     scale / entityScale, translate, pose, camera, player);
+            graphics.pose().pushPose();
+            try {
+                graphics.pose().translate((left + right) / 2.0F, (top + bottom) / 2.0F, 50.0F);
+                graphics.pose().scale(scale / entityScale, scale / entityScale, -scale / entityScale);
+                graphics.pose().translate(translate.x, translate.y, translate.z);
+                graphics.pose().mulPose(pose);
+                PrestigeIntegration.render(graphics, player, camera);
+            } finally {
+                graphics.pose().popPose();
+            }
         } finally {
             renderingMotion = false;
             player.yBodyRot = oldBody;
