@@ -38,6 +38,7 @@ public final class StudioScreen extends Screen {
     private float yaw;
     private float pitch;
     private float roll;
+    private float zoom = 1.0F;
     private boolean draggingPreview;
     private int dragButton;
     private StudioAvatarRenderer.Motion motion = StudioAvatarRenderer.Motion.IDLE;
@@ -147,7 +148,8 @@ public final class StudioScreen extends Screen {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null) return;
         int margin = Math.max(8, stageRight / 15);
-        int scale = Math.max(25, Math.min((int) ((this.height - 85) / 2.5F), (stageRight - 2 * margin) / 3));
+        int scale = Math.round(Math.max(25, Math.min((int) ((this.height - 85) / 2.5F),
+                (stageRight - 2 * margin) / 3)) * zoom);
         PlayerSkin original = minecraft.player.getSkin();
         SkinOverride.begin(customSkin, original, selectedModel(original.model()));
         try {
@@ -165,7 +167,7 @@ public final class StudioScreen extends Screen {
             graphics.drawCenteredString(this.font, hint, stageRight / 2, this.height / 2, 0xFF30363D);
             return;
         }
-        StudioItemRenderer.render(graphics, selectedStack, stageRight, this.height, yaw, pitch, roll, 1.0F);
+        StudioItemRenderer.render(graphics, selectedStack, stageRight, this.height, yaw, pitch, roll, zoom);
     }
 
     private int backgroundColor() {
@@ -269,6 +271,15 @@ public final class StudioScreen extends Screen {
             return true;
         }
         return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (mouseX >= 0 && mouseX < this.width - panelWidth() && scrollY != 0.0) {
+            zoom = Mth.clamp((float) (zoom * Math.pow(1.12, scrollY)), 0.35F, 3.0F);
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
     boolean importSkin(Path source) {

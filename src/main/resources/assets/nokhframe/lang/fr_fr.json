@@ -8,7 +8,7 @@
   "label.nokhframe.nickname": "Pseudo Minecraft",
   "label.nokhframe.hex": "Couleur hexadécimale",
   "label.nokhframe.search": "Nom, identifiant ou @mod",
-  "label.nokhframe.rotate_hint": "Glisser gauche : X/Y · droit : Z/Y",
+  "label.nokhframe.rotate_hint": "Glisser : rotation · molette : zoom",
   "label.nokhframe.skin_path": "Chemin du PNG à importer",
   "label.nokhframe.drop_skin": "Glissez un PNG 64 × 64 dans cette fenêtre",
   "label.nokhframe.choose_item": "Choisissez un item dans le catalogue",

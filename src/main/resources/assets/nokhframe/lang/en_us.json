@@ -8,7 +8,7 @@
   "label.nokhframe.nickname": "Minecraft name",
   "label.nokhframe.hex": "Hex background color",
   "label.nokhframe.search": "Name, ID or @mod",
-  "label.nokhframe.rotate_hint": "Left drag: X/Y · right drag: Z/Y",
+  "label.nokhframe.rotate_hint": "Drag: rotate · wheel: zoom",
   "label.nokhframe.skin_path": "Path to PNG file",
   "label.nokhframe.drop_skin": "Drop a 64 × 64 PNG into this window",
   "label.nokhframe.choose_item": "Choose an item from the catalog",

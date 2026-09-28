@@ -74,7 +74,10 @@ public final class StudioAvatarRenderer {
                 graphics.pose().scale(scale / entityScale, scale / entityScale, -scale / entityScale);
                 graphics.pose().translate(translate.x, translate.y, translate.z);
                 graphics.pose().mulPose(pose);
+                OwnedPetPreviewRenderer.render(graphics, player);
+                WorldStagePreviewRenderer.renderBeforeParticles(graphics, player, camera);
                 WorldParticleRenderer.render(graphics, player, camera);
+                WorldStagePreviewRenderer.renderAfterParticles(graphics, player, camera);
             } finally {
                 graphics.pose().popPose();
             }

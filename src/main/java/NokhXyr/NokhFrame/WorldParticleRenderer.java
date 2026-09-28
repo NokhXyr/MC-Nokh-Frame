@@ -1,117 +1,68 @@
 package NokhXyr.NokhFrame;
 
-import NokhXyr.NokhFrame.mixin.ParticleEngineAccessor;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.Queue;
-
-/** Draws nearby particles from Minecraft's particle engine in the player preview. */
+/** Reuses the particle engine so registered mod particle render types retain their native rendering. */
 public final class WorldParticleRenderer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorldParticleRenderer.class);
+    private static boolean failed;
+
     private WorldParticleRenderer() {
     }
 
     public static void render(GuiGraphics graphics, LocalPlayer player, Quaternionf sceneRotation) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.level == null || !(minecraft.particleEngine instanceof ParticleEngineAccessor access)) return;
-        Map<ParticleRenderType, Queue<Particle>> particles = access.nokhframe$getParticles();
-        if (particles.isEmpty()) return;
+        if (failed || minecraft.level == null) return;
 
-        PreviewCamera camera = new PreviewCamera(player.position(),
-                new Quaternionf(sceneRotation).conjugate().rotateY((float) Math.PI));
-        Matrix4f transform = new Matrix4f(graphics.pose().last().pose());
-        int rendered = 0;
-        for (Map.Entry<ParticleRenderType, Queue<Particle>> entry : particles.entrySet()) {
-            ParticleRenderType type = entry.getKey();
-            if (type != ParticleRenderType.TERRAIN_SHEET
-                    && type != ParticleRenderType.PARTICLE_SHEET_OPAQUE
-                    && type != ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT
-                    && type != ParticleRenderType.PARTICLE_SHEET_LIT) continue;
-            var texture = type == ParticleRenderType.TERRAIN_SHEET
-                    ? TextureAtlas.LOCATION_BLOCKS : TextureAtlas.LOCATION_PARTICLES;
-            VertexConsumer target = graphics.bufferSource().getBuffer(RenderType.entityTranslucent(texture));
-            VertexConsumer transformed = new TransformingConsumer(target, transform);
-            for (Particle particle : entry.getValue()) {
-                if (rendered >= 400) break;
-                if (!particle.isAlive() || particle.getPos().distanceToSqr(player.position()) > 16.0) continue;
-                try {
-                    particle.render(transformed, camera, 1.0F);
-                    rendered++;
-                } catch (RuntimeException ignored) {
-                    // A particle supplied by another mod may need a world-only render path.
-                }
+        Vec3 origin = player.position();
+        Quaternionf orientation = new Quaternionf(sceneRotation).conjugate().rotateY((float) Math.PI);
+        Camera camera = new PreviewCamera(origin, orientation);
+        AABB bounds = new AABB(origin.x - 4, origin.y - 3, origin.z - 4,
+                origin.x + 4, origin.y + 5, origin.z + 4);
+        Frustum frustum = new Frustum(new Matrix4f(), new Matrix4f()) {
+            @Override
+            public boolean isVisible(AABB box) {
+                return box.intersects(bounds);
             }
-            if (rendered >= 400) break;
-        }
+        };
+        frustum.prepare(origin.x, origin.y, origin.z);
+
         graphics.flush();
+        Matrix4fStack modelView = RenderSystem.getModelViewStack();
+        modelView.pushMatrix();
+        try {
+            modelView.mul(graphics.pose().last().pose());
+            RenderSystem.applyModelViewMatrix();
+            minecraft.particleEngine.render(minecraft.gameRenderer.lightTexture(), camera, 1.0F,
+                    frustum, type -> true);
+        } catch (RuntimeException | LinkageError exception) {
+            failed = true;
+            LOGGER.warn("Native particles cannot be rendered in the studio preview", exception);
+        } finally {
+            modelView.popMatrix();
+            RenderSystem.applyModelViewMatrix();
+        }
     }
 
     private static final class PreviewCamera extends Camera {
         PreviewCamera(Vec3 position, Quaternionf orientation) {
             setPosition(position);
-            rotation().set(orientation);
-        }
-    }
-
-    private static final class TransformingConsumer implements VertexConsumer {
-        private final VertexConsumer target;
-        private final Matrix4f transform;
-        private final Vector3f position = new Vector3f();
-
-        TransformingConsumer(VertexConsumer target, Matrix4f transform) {
-            this.target = target;
-            this.transform = transform;
-        }
-
-        @Override
-        public VertexConsumer addVertex(float x, float y, float z) {
-            transform.transformPosition(x, y, z, position);
-            target.addVertex(position.x, position.y, position.z)
-                    .setOverlay(OverlayTexture.NO_OVERLAY).setNormal(0.0F, 0.0F, 1.0F);
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setColor(int red, int green, int blue, int alpha) {
-            target.setColor(red, green, blue, alpha);
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv(float u, float v) {
-            target.setUv(u, v);
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv1(int u, int v) {
-            target.setUv1(u, v);
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv2(int u, int v) {
-            target.setUv2(u, v);
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setNormal(float x, float y, float z) {
-            target.setNormal(x, y, z);
-            return this;
+            Vector3f angles = orientation.getEulerAnglesYXZ(new Vector3f());
+            setRotation(180.0F - (float) Math.toDegrees(angles.y),
+                    -(float) Math.toDegrees(angles.x), -(float) Math.toDegrees(angles.z));
         }
     }
 }

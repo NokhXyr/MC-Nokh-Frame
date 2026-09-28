@@ -18,6 +18,7 @@ public final class StudioItemRenderer {
         Minecraft minecraft = Minecraft.getInstance();
         BakedModel model = minecraft.getItemRenderer().getModel(stack, minecraft.level, minecraft.player, 0);
         float size = Math.min(stageRight, height) * 0.50F * zoom;
+        graphics.enableScissor(0, 0, stageRight, height);
         graphics.pose().pushPose();
         try {
             graphics.pose().translate(stageRight / 2.0F, height / 2.0F, 150.0F);
@@ -32,6 +33,7 @@ public final class StudioItemRenderer {
         } finally {
             Lighting.setupFor3DItems();
             graphics.pose().popPose();
+            graphics.disableScissor();
         }
     }
 }
