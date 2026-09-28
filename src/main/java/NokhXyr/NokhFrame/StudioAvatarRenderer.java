@@ -74,7 +74,7 @@ public final class StudioAvatarRenderer {
                 graphics.pose().scale(scale / entityScale, scale / entityScale, -scale / entityScale);
                 graphics.pose().translate(translate.x, translate.y, translate.z);
                 graphics.pose().mulPose(pose);
-                PrestigeIntegration.render(graphics, player, camera);
+                WorldParticleRenderer.render(graphics, player, camera);
             } finally {
                 graphics.pose().popPose();
             }
