@@ -2,6 +2,12 @@
 
 The version shown here is the mod version. Minecraft and NeoForge versions are listed in the [user guide](docs/USER_GUIDE.en.md).
 
+## 0.5.5 — 29 September 2026
+
+- Lowered the required NeoForge version for Minecraft 1.21.1 from 21.1.250 to 21.1.1.
+- Compiled the release against NeoForge 21.1.1 to avoid linking to newer API methods.
+- Seven GameTests and an automated client studio opening and rendering check passed on 21.1.1 and 21.1.252.
+
 ## 0.5.4 — 29 September 2026
 
 - Added a PNG background library with file path import and drag and drop. Images are copied to `config/nokhframe/backgrounds` and can be used for player or item photos.

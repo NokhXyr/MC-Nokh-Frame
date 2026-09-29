@@ -2,6 +2,12 @@
 
 La [version anglaise](CHANGELOG.md) contient les mêmes changements.
 
+## 0.5.5 — 29 septembre 2026
+
+- Version minimale de NeoForge pour Minecraft 1.21.1 abaissée de 21.1.250 à 21.1.1.
+- JAR compilé avec NeoForge 21.1.1 pour éviter de dépendre d'API plus récentes.
+- Sept GameTests et un test client automatisé d'ouverture et de rendu du studio réussis sur 21.1.1 et 21.1.252.
+
 ## 0.5.4 — 29 septembre 2026
 
 - Bibliothèque de fonds PNG pour les photos de joueur ou d'item, avec import par chemin ou glisser-déposer. Les images sont copiées dans `config/nokhframe/backgrounds`.
