@@ -2,7 +2,7 @@
 
 ## Installer et ouvrir
 
-Nokh Frame est un mod **client** pour **Minecraft 1.21.1**, construit avec **NeoForge 21.1.250**. Placez `nokhframe-0.5.4.jar` dans le dossier `mods` de l'instance Minecraft, puis démarrez le jeu. Aucun mod cosmétique n'est obligatoire pour ouvrir le studio.
+Nokh Frame est un mod **client** pour **Minecraft 1.21.1**. Il exige **NeoForge 21.1.250 minimum** (branche 21.1.x) ; les versions antérieures ne chargent pas le mod. La version 21.1.250 a servi à la compilation et aux tests. Les versions ultérieures respectent la plage de dépendance déclarée, mais n'ont pas toutes été vérifiées individuellement. Placez `nokhframe-0.5.4.jar` dans le dossier `mods` de l'instance Minecraft, puis démarrez le jeu. Aucun mod cosmétique n'est obligatoire pour ouvrir le studio.
 
 Entrez dans un monde, puis saisissez `/nokhframe` dans le chat. La commande ouvre le studio sur le personnage local. Il n'y a pas de raccourci clavier.
 

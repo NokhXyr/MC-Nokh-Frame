@@ -38,6 +38,3 @@ run/
 **/src/generated/**/.cache/
 repo/
 !**/src/**/repo/
-
-### docs
-docs/CURSEFORGE_0.5.4.md
