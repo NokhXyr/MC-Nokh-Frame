@@ -2,6 +2,45 @@
 
 La [version anglaise](CHANGELOG.md) contient les mêmes changements.
 
+## 1.0.0 — 29 septembre 2026
+
+Première version stable. Elle réunit tout ce qui a été construit de la 0.3.0 à la 0.5.10 ; l'historique détaillé suit plus bas.
+
+### Studio photo
+
+- Ouvrez le studio avec `/nokhframe` et photographiez votre joueur ou n'importe quel item enregistré. Les photos sont enregistrées dans le dossier `screenshots` de l'instance, sans le panneau latéral.
+- L'aperçu du joueur montre le vrai joueur local : équipement, couches cosmétiques, pseudo natif, pets possédés, particules et effets rendus dans le monde par les mods qui utilisent les chemins de rendu standard.
+- Aperçu des items en 3D, avec un catalogue recherchable par nom, identifiant ou `@mod`, et sélection depuis l'inventaire avec les composants de l'item.
+- Bibliothèque de skins (`config/nokhframe/skins`, PNG 64 × 64, suffixes `_slim` / `_wide`) avec import par chemin ou glisser-déposer. Le skin du studio ne modifie jamais celui de votre compte.
+- Fonds : couleurs prédéfinies, toute couleur `#RRGGBB`, ou bibliothèque de PNG (`config/nokhframe/backgrounds`, jusqu'à 4096 × 4096 pixels et 16 Mo).
+- Caméra : rotation sur trois axes à la souris, zoom de 8 % à 300 %, clic molette glissé pour déplacer la vue.
+
+### Mouvement et pose
+
+- Mouvements : repos, marche, course, accroupissement et attaque (coup net de la main principale suivi d'une courte pause).
+- Éditeur de pose, comme un porte-armure : dix poses toutes faites (neutre, assis, salut, T-pose, victoire, pointer, penseur, fier, course figée) et angles X/Y/Z pour la tête, le corps, les bras et les jambes, avec miroir. Les armures et cosmétiques qui suivent le modèle du joueur prennent la même pose.
+
+### Scènes 3D et placement
+
+- Décors 3D autour du joueur : structures Minecraft (`.nbt`, enregistrées avec un bloc de structure, blocs de tous les mods installés) et modèles Blockbench (`.bbmodel` à textures intégrées, ou `.json` Java). Bibliothèque dans `config/nokhframe/scenes`, fichiers jusqu'à 125 Mo (256 blocs de côté, 2 millions de blocs). Le mode Studio dessine les scènes depuis des tampons GPU construits une fois.
+- Page Placement : déplacer, tourner et redimensionner le joueur et la scène, et décaler, zoomer, tourner ou incliner la vue, par pas de 1/16 à 1 bloc, avec raccourcis clavier. La vue suit le joueur.
+- Taille du joueur de 25 % à 400 % (Ctrl + molette), les pieds restant posés sur la scène.
+
+### Shaderpacks
+
+- Mode **Monde** : la vraie caméra du jeu tourne autour du joueur, pour que les shaderpacks Iris/Oculus s'appliquent à l'aperçu et à la photo ; pose, skin, taille et scène sont appliqués dans le monde.
+- Le mode **Studio** avec un shaderpack actif passe lui aussi par le rendu du monde : terrain, ciel, météo et autres créatures sont masqués et la couleur ou le PNG sert de toile de fond.
+
+### Serveurs
+
+- Sur un serveur équipé du mod, `/nokhframe` est protégée par la permission `nokhframe.use` (LuckPerms et autres gestionnaires de permissions NeoForge) et masquée de l'auto-complétion sans elle. Sans mod de permissions, les opérateurs (niveau 2 ou plus) y ont accès ; le solo et l'hôte LAN toujours.
+- Sur un serveur sans le mod, la commande client est réservée aux opérateurs.
+
+### Compatibilité
+
+- Minecraft 1.21.1 avec NeoForge 21.1.1 ou plus récent (21.1.x). Interface en français et en anglais.
+- Vérifié en jeu sur NeoForge 21.1.1, et avec Iris 1.8.14 + Sodium 0.8.13 et le shaderpack Complementary Reimagined sur 21.1.252. 15 GameTests sans interface réussis.
+
 ## 0.5.10 — 29 septembre 2026
 
 - Les shaderpacks s'appliquent maintenant à l'aperçu **Studio** : quand un shaderpack Iris/Oculus est actif, le mode Studio passe par le rendu du monde en masquant le terrain, le ciel, les nuages, la météo, les blocs animés du monde et les autres créatures, avec la couleur ou le PNG en toile de fond.

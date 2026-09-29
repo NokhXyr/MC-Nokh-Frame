@@ -4,7 +4,7 @@
 
 Nokh Frame est un mod client pour Minecraft **1.21.1** et NeoForge **21.1.1 minimum** (branche 21.1.x). Il crée des aperçus photo de votre personnage avec ses cosmétiques actifs, ou de n'importe quel item enregistré par le jeu et les mods.
 
-La version 0.5.10 est compilée avec NeoForge 21.1.1. Les 15 GameTests réussissent sur 21.1.1. Le studio (scènes, placement, poses, taille, zoom, mode Monde, Studio avec shaderpack) a été vérifié en jeu sur 21.1.1, et les modes Monde et Studio avec Iris 1.8.14 + Sodium 0.8.13 et le shaderpack Complementary Reimagined sur 21.1.252.
+La version 1.0.0 est compilée avec NeoForge 21.1.1. Les 15 GameTests réussissent sur 21.1.1. Le studio (scènes, placement, poses, taille, zoom, mode Monde, Studio avec shaderpack) a été vérifié en jeu sur 21.1.1, et les modes Monde et Studio avec Iris 1.8.14 + Sodium 0.8.13 et le shaderpack Complementary Reimagined sur 21.1.252.
 
 [Guide complet en français](docs/USER_GUIDE.fr.md) · [Journal des versions](CHANGELOG.fr.md) · [Captures du jeu](media/screenshots/README.md)
 
@@ -12,7 +12,7 @@ La version 0.5.10 est compilée avec NeoForge 21.1.1. Les 15 GameTests réussiss
 
 ## Utilisation
 
-1. Installer `nokhframe-0.5.10.jar` dans le dossier `mods`, puis lancer Minecraft.
+1. Installer `nokhframe-1.0.0.jar` dans le dossier `mods`, puis lancer Minecraft.
 2. Entrer dans un monde et activer les cosmétiques souhaités.
 3. Saisir **`/nokhframe`** dans le chat pour ouvrir le studio.
 4. Choisir **Joueur** ou **Item**. Le catalogue des items permet une recherche par nom ou identifiant (`modid:item`). Saisir `@nomdumod` pour filtrer par mod, éventuellement avec un nom d'item (`@minecraft épée`). Le bouton **Depuis l'inventaire** copie l'item choisi avec ses composants.
@@ -85,13 +85,13 @@ Exécuter les GameTests NeoForge sans interface graphique avec `gradlew.bat runG
 
 Nokh Frame is a client-side mod for Minecraft **1.21.1** and NeoForge **21.1.1 or newer** in the 21.1.x line. It makes photo previews of your character with active cosmetics, or of any item registered by Minecraft and installed mods.
 
-Version 0.5.10 is compiled against NeoForge 21.1.1. All 15 GameTests pass on 21.1.1. The studio (scenes, placement, poses, size, zoom, World mode, Studio with a shaderpack) was checked in game on 21.1.1, and World and Studio modes with Iris 1.8.14 + Sodium 0.8.13 and the Complementary Reimagined shaderpack on 21.1.252.
+Version 1.0.0 is compiled against NeoForge 21.1.1. All 15 GameTests pass on 21.1.1. The studio (scenes, placement, poses, size, zoom, World mode, Studio with a shaderpack) was checked in game on 21.1.1, and World and Studio modes with Iris 1.8.14 + Sodium 0.8.13 and the Complementary Reimagined shaderpack on 21.1.252.
 
 [Full English guide](docs/USER_GUIDE.en.md) · [Changelog](CHANGELOG.md) · [In-game screenshots](media/screenshots/README.md)
 
 ### How to use
 
-1. Put `nokhframe-0.5.10.jar` in the `mods` folder and start Minecraft.
+1. Put `nokhframe-1.0.0.jar` in the `mods` folder and start Minecraft.
 2. Join a world and enable the cosmetics you want to show.
 3. Enter **`/nokhframe`** in chat to open the studio.
 4. Choose **Player** or **Item**. Search the item catalog by display name or registry ID (`modid:item`). Type `@modname` to filter by mod, optionally followed by an item name (`@minecraft sword`). **From inventory** copies the selected stack with its data components.

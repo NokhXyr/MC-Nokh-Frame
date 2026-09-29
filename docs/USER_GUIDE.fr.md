@@ -1,10 +1,10 @@
-# Guide d'utilisation — Nokh Frame 0.5.10
+# Guide d'utilisation — Nokh Frame 1.0.0
 
 ## Installer et ouvrir
 
-Nokh Frame est un mod **client** pour **Minecraft 1.21.1**. La version 0.5.10 exige **NeoForge 21.1.1 minimum** (branche 21.1.x) ; les versions antérieures ne chargent pas le mod. Le JAR est compilé avec NeoForge 21.1.1. Placez `nokhframe-0.5.10.jar` dans le dossier `mods` de l'instance Minecraft, puis démarrez le jeu. Aucun mod cosmétique n'est obligatoire pour ouvrir le studio. Installé aussi sur un serveur, il réserve `/nokhframe` aux opérateurs ou à la permission `nokhframe.use` (LuckPerms) ; voir le README.
+Nokh Frame est un mod **client** pour **Minecraft 1.21.1**. La version 1.0.0 exige **NeoForge 21.1.1 minimum** (branche 21.1.x) ; les versions antérieures ne chargent pas le mod. Le JAR est compilé avec NeoForge 21.1.1. Placez `nokhframe-1.0.0.jar` dans le dossier `mods` de l'instance Minecraft, puis démarrez le jeu. Aucun mod cosmétique n'est obligatoire pour ouvrir le studio. Installé aussi sur un serveur, il réserve `/nokhframe` aux opérateurs ou à la permission `nokhframe.use` (LuckPerms) ; voir le README.
 
-Les tests client (ouverture et rendu du studio) réussissaient sur NeoForge 21.1.1 et 21.1.252 pour la 0.5.5. Pour la 0.5.10, les 15 GameTests réussissent sur 21.1.1 et le studio a été vérifié en jeu sur 21.1.1 (mode Monde avec Iris sur 21.1.252). Les versions intermédiaires sont couvertes par la plage déclarée, mais n'ont pas été testées individuellement.
+Les tests client (ouverture et rendu du studio) réussissaient sur NeoForge 21.1.1 et 21.1.252 pour la 0.5.5. Pour la 1.0.0, les 15 GameTests réussissent sur 21.1.1 et le studio a été vérifié en jeu sur 21.1.1 (mode Monde avec Iris sur 21.1.252). Les versions intermédiaires sont couvertes par la plage déclarée, mais n'ont pas été testées individuellement.
 
 Entrez dans un monde, puis saisissez `/nokhframe` dans le chat. La commande ouvre le studio sur le personnage local. Il n'y a pas de raccourci clavier.
 

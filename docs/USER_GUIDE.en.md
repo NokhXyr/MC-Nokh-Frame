@@ -1,10 +1,10 @@
-# User guide — Nokh Frame 0.5.10
+# User guide — Nokh Frame 1.0.0
 
 ## Install and open
 
-Nokh Frame is a **client-side** mod for **Minecraft 1.21.1**. Version 0.5.10 requires **NeoForge 21.1.1 or newer** in the 21.1.x line; older versions cannot load it. The JAR is compiled against NeoForge 21.1.1. Place `nokhframe-0.5.10.jar` in your instance's `mods` folder, then start the game. Cosmetic mods are optional. Installing it on a server as well restricts `/nokhframe` to operators or to the `nokhframe.use` permission (LuckPerms); see the README.
+Nokh Frame is a **client-side** mod for **Minecraft 1.21.1**. Version 1.0.0 requires **NeoForge 21.1.1 or newer** in the 21.1.x line; older versions cannot load it. The JAR is compiled against NeoForge 21.1.1. Place `nokhframe-1.0.0.jar` in your instance's `mods` folder, then start the game. Cosmetic mods are optional. Installing it on a server as well restricts `/nokhframe` to operators or to the `nokhframe.use` permission (LuckPerms); see the README.
 
-Client checks (opening and rendering the studio) passed on NeoForge 21.1.1 and 21.1.252 for 0.5.5. For 0.5.10, all 15 GameTests pass on 21.1.1 and the studio was checked in game on 21.1.1 (World mode with Iris on 21.1.252). Intermediate builds satisfy the declared range but have not each been tested.
+Client checks (opening and rendering the studio) passed on NeoForge 21.1.1 and 21.1.252 for 0.5.5. For 1.0.0, all 15 GameTests pass on 21.1.1 and the studio was checked in game on 21.1.1 (World mode with Iris on 21.1.252). Intermediate builds satisfy the declared range but have not each been tested.
 
 Join a world and type `/nokhframe` in chat. The client command opens the studio for your local player. There is no keybind.
 
