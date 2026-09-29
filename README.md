@@ -4,6 +4,8 @@
 
 Nokh Frame est un mod client pour Minecraft **1.21.1** et NeoForge **21.1.250**. Il crée des aperçus photo de votre personnage avec ses cosmétiques actifs, ou de n'importe quel item enregistré par le jeu et les mods.
 
+[Guide complet en français](docs/USER_GUIDE.fr.md) · [Journal des versions](CHANGELOG.fr.md) · [Captures du jeu](media/screenshots)
+
 ## Utilisation
 
 1. Installer `nokhframe-0.5.4.jar` dans le dossier `mods`, puis lancer Minecraft.
@@ -36,6 +38,8 @@ Exécuter les GameTests NeoForge sans interface graphique avec `gradlew.bat runG
 ## English
 
 Nokh Frame is a client-side mod for Minecraft **1.21.1** and NeoForge **21.1.250**. It makes photo previews of your character with active cosmetics, or of any item registered by Minecraft and installed mods.
+
+[Full English guide](docs/USER_GUIDE.en.md) · [Changelog](CHANGELOG.md) · [In-game screenshots](media/screenshots)
 
 ### How to use
 

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Nokh Frame logo">
+  <rect width="512" height="512" rx="72" fill="#171F2A"/>
+  <path d="M96 194V112h82M334 112h82v82M416 318v82h-82M178 400H96v-82" fill="none" stroke="#79D7DF" stroke-width="22" stroke-linecap="square"/>
+  <path d="M139 359V153h44l146 206h44V153" fill="none" stroke="#F3F1E8" stroke-width="28" stroke-linejoin="miter"/>
+  <path d="M117 432h278" stroke="#F2B96D" stroke-width="10" stroke-linecap="square"/>
+</svg>
