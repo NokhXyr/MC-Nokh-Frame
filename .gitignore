@@ -40,3 +40,4 @@ repo/
 !**/src/**/repo/
 
 /extras
+/scripts
