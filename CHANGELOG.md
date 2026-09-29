@@ -2,6 +2,25 @@
 
 The version shown here is the mod version. Minecraft and NeoForge versions are listed in the [user guide](docs/USER_GUIDE.en.md).
 
+## 0.5.8 — 29 September 2026
+
+- Added the **World** render mode: the real game camera orbits the player so Iris/Oculus shaderpacks render the preview and the photo. The pose, skin, size and 3D scene are applied in the world; the HUD and block outline are hidden.
+- Added player size: Ctrl + mouse wheel, 25 % to 400 %, with the feet kept on the scene.
+- The zoom now goes out to 8 % (was 35 %).
+- The Player/Item button is now shorter and shares the top row with the Studio/World toggle.
+
+## 0.5.7 — 29 September 2026
+
+- Added 3D scenes: Minecraft structures (`.nbt`) and Blockbench models (`.bbmodel`, Java `.json`) are rendered around the player and rotate with the camera, in front of the color or PNG background. Library in `config/nokhframe/scenes`, import by path or drag and drop.
+- Fixed the Attack motion: the main hand now swings with a quick hit followed by a short rest. Before, the off hand moved while the player had not swung since joining.
+- The rotation buttons are now arrows, with the **3D scene** button between them.
+
+## 0.5.6 — 29 September 2026
+
+- `/nokhframe` is now a server command guarded by the `nokhframe.use` permission node (LuckPerms and other NeoForge permission handlers). Players without it do not get the command in auto-completion.
+- Without a permission mod, only operators (level 2+) can open the studio on a server. Singleplayer and the LAN host always keep access.
+- On servers without the mod, the client-side command is limited to operators.
+
 ## 0.5.5 — 29 September 2026
 
 - Lowered the required NeoForge version for Minecraft 1.21.1 from 21.1.250 to 21.1.1.

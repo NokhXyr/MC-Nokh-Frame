@@ -2,6 +2,25 @@
 
 La [version anglaise](CHANGELOG.md) contient les mêmes changements.
 
+## 0.5.8 — 29 septembre 2026
+
+- Nouveau mode de rendu **Monde** : la vraie caméra du jeu tourne autour du joueur, pour que les shaderpacks Iris/Oculus s'appliquent à l'aperçu et à la photo. Pose, skin, taille et scène 3D sont appliqués dans le monde ; le HUD et le contour de bloc sont masqués.
+- Taille du joueur réglable avec Ctrl + molette, de 25 % à 400 %, les pieds restant posés sur la scène.
+- Le zoom descend maintenant jusqu'à 8 % (35 % avant).
+- Le bouton Joueur/Item est plus court et partage la première ligne avec le choix Studio/Monde.
+
+## 0.5.7 — 29 septembre 2026
+
+- Scènes 3D : les structures Minecraft (`.nbt`) et les modèles Blockbench (`.bbmodel`, `.json` Java) sont rendus autour du joueur et tournent avec la caméra, devant le fond couleur ou PNG. Bibliothèque dans `config/nokhframe/scenes`, import par chemin ou glisser-déposer.
+- Correction du mouvement Attaque : la main principale frappe d'un coup net puis marque une courte pause. Avant, c'était la main secondaire qui bougeait tant que le joueur n'avait pas frappé depuis sa connexion.
+- Les boutons de rotation deviennent des flèches, avec le bouton **Scène 3D** entre les deux.
+
+## 0.5.6 — 29 septembre 2026
+
+- `/nokhframe` devient une commande serveur protégée par la permission `nokhframe.use` (LuckPerms et autres gestionnaires de permissions NeoForge). Un joueur sans cette permission n'a pas la commande en auto-complétion.
+- Sans mod de permissions, seuls les opérateurs (niveau 2 ou plus) peuvent ouvrir le studio sur un serveur. Le solo et l'hôte LAN gardent toujours l'accès.
+- Sur un serveur sans le mod, la commande côté client est réservée aux opérateurs.
+
 ## 0.5.5 — 29 septembre 2026
 
 - Version minimale de NeoForge pour Minecraft 1.21.1 abaissée de 21.1.250 à 21.1.1.

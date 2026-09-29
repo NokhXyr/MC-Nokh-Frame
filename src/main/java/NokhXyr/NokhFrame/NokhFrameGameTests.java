@@ -3,6 +3,9 @@ package NokhXyr.NokhFrame;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.server.players.ServerOpListEntry;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -90,4 +93,72 @@ public final class NokhFrameGameTests {
         helper.succeed();
     }
 
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void sceneFilesAndLimits(GameTestHelper helper) {
+        helper.assertTrue(StudioRules.isSceneFile(Path.of("Arcadia.NBT")), "Structure extension should be case insensitive");
+        helper.assertTrue(StudioRules.isSceneFile(Path.of("halo.bbmodel")), "Blockbench projects are scenes");
+        helper.assertTrue(StudioRules.isSceneFile(Path.of("model.json")), "Java model exports are scenes");
+        helper.assertFalse(StudioRules.isSceneFile(Path.of("background.png")), "PNG files belong to the image library");
+        helper.assertTrue(StudioRules.isSupportedStructureSize(48, 48, 48), "Structure block maximum size must load");
+        helper.assertFalse(StudioRules.isSupportedStructureSize(97, 4, 4), "Oversized structures are rejected");
+        helper.assertFalse(StudioRules.isSupportedStructureSize(0, 4, 4), "Empty dimensions are rejected");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void scenePlayerStandsOnFirstFloor(GameTestHelper helper) {
+        helper.assertTrue(StudioRules.standingHeight(new boolean[]{true, true, false, false}) == 2,
+                "The player stands on top of a two-layer floor");
+        helper.assertTrue(StudioRules.standingHeight(new boolean[]{true, false, false, true}) == 1,
+                "A roof above the player must be ignored");
+        helper.assertTrue(StudioRules.standingHeight(new boolean[]{false, false, false}) == 0,
+                "An empty center column puts the feet at the bottom");
+        helper.assertTrue(StudioRules.standingHeight(new boolean[]{true, true}) == 2,
+                "A solid column puts the feet on its top");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void zoomAndPlayerSizeLimits(GameTestHelper helper) {
+        helper.assertTrue(StudioRules.clampZoom(0.01F) == StudioRules.MIN_ZOOM, "Zoom out stops at the minimum");
+        helper.assertTrue(StudioRules.MIN_ZOOM <= 0.1F, "The studio must zoom out to at least 10 %");
+        helper.assertTrue(StudioRules.clampZoom(10.0F) == StudioRules.MAX_ZOOM, "Zoom in stops at the maximum");
+        helper.assertTrue(StudioRules.nextPlayerSize(1.0F, 1) > 1.0F, "Scrolling up enlarges the player");
+        helper.assertTrue(StudioRules.nextPlayerSize(1.0F, -1) < 1.0F, "Scrolling down shrinks the player");
+        helper.assertTrue(StudioRules.nextPlayerSize(1.1F, -1) == 1.0F, "Player size snaps back to exactly 100 %");
+        helper.assertTrue(StudioRules.nextPlayerSize(4.0F, 5) == StudioRules.MAX_PLAYER_SIZE, "Player size has a maximum");
+        helper.assertTrue(StudioRules.nextPlayerSize(0.25F, -5) == StudioRules.MIN_PLAYER_SIZE, "Player size has a minimum");
+        helper.assertTrue(StudioRules.worldCameraDistance(0.5F) == 2 * StudioRules.worldCameraDistance(1.0F),
+                "Zooming out moves the world camera away proportionally");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void attackMotionSwingsThenRests(GameTestHelper helper) {
+        helper.assertTrue(StudioRules.attackProgress(0.0F) == 0.0F, "A swing starts from rest");
+        helper.assertTrue(StudioRules.attackProgress(StudioRules.ATTACK_SWING_SECONDS / 2) > 0.4F,
+                "The arm must be mid-swing halfway through the hit");
+        helper.assertTrue(StudioRules.attackProgress(StudioRules.ATTACK_SWING_SECONDS + 0.1F) == 0.0F,
+                "The arm rests after the hit");
+        helper.assertTrue(StudioRules.attackProgress(StudioRules.ATTACK_CYCLE_SECONDS + 0.1F) > 0.0F,
+                "The hit repeats every cycle");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void studioRequiresOperatorByDefault(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        PlayerList players = helper.getLevel().getServer().getPlayerList();
+        helper.assertFalse(StudioAccessNetwork.canUse(player), "Players without permission must not open the studio");
+        helper.assertTrue(helper.getLevel().getServer().getCommands().getDispatcher().getRoot().getChild("nokhframe") != null,
+                "The server must register /nokhframe");
+        // GameTestServer grants level 0 to plain ops, so add a level-2 entry like a default dedicated server op.
+        players.getOps().add(new ServerOpListEntry(player.getGameProfile(), StudioAccessNetwork.DEFAULT_PERMISSION_LEVEL, false));
+        try {
+            helper.assertTrue(StudioAccessNetwork.canUse(player), "Operators must open the studio without a permission mod");
+        } finally {
+            players.getOps().remove(player.getGameProfile());
+        }
+        helper.succeed();
+    }
 }

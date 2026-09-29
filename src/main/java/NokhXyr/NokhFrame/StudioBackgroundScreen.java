@@ -13,9 +13,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/** PNG library shared by player and item photo previews. */
+/** Library of PNG backgrounds or 3D sets, with import by path or drag and drop. */
 public final class StudioBackgroundScreen extends Screen {
+    public enum Kind {
+        IMAGE("backgrounds", "search_background", "background_path", "drop_background", "invalid_background_file"),
+        SCENE("scenes", "search_scene", "scene_path", "drop_scene", "invalid_scene_file");
+
+        private final String title;
+        private final String search;
+        private final String path;
+        private final String drop;
+        private final String invalid;
+
+        Kind(String title, String search, String path, String drop, String invalid) {
+            this.title = title;
+            this.search = search;
+            this.path = path;
+            this.drop = drop;
+            this.invalid = invalid;
+        }
+    }
+
     private final StudioScreen parent;
+    private final Kind kind;
     private final List<Path> all;
     private final List<Path> filtered = new ArrayList<>();
     private final List<Button> rows = new ArrayList<>();
@@ -27,10 +47,11 @@ public final class StudioBackgroundScreen extends Screen {
     private int page;
     private int pageSize;
 
-    public StudioBackgroundScreen(StudioScreen parent) {
-        super(Component.translatable("screen.nokhframe.backgrounds"));
+    public StudioBackgroundScreen(StudioScreen parent, Kind kind) {
+        super(Component.translatable("screen.nokhframe." + kind.title));
         this.parent = parent;
-        this.all = parent.backgroundFiles();
+        this.kind = kind;
+        this.all = kind == Kind.SCENE ? parent.sceneFiles() : parent.backgroundFiles();
         filter();
     }
 
@@ -39,10 +60,10 @@ public final class StudioBackgroundScreen extends Screen {
         int contentWidth = Math.min(360, this.width - 24);
         int x = (this.width - contentWidth) / 2;
         pageSize = Math.max(3, Math.min(9, (this.height - 150) / 22));
-        search = new EditBox(this.font, x, 34, contentWidth, 20, Component.translatable("label.nokhframe.search_background"));
+        search = new EditBox(this.font, x, 34, contentWidth, 20, Component.translatable("label.nokhframe." + kind.search));
         search.setValue(query);
         search.setResponder(value -> { query = value; page = 0; filter(); refreshRows(); });
-        search.setHint(Component.translatable("label.nokhframe.search_background"));
+        search.setHint(Component.translatable("label.nokhframe." + kind.search));
         this.addRenderableWidget(search);
         for (int i = 0; i < pageSize; i++) {
             final int slot = i;
@@ -56,14 +77,22 @@ public final class StudioBackgroundScreen extends Screen {
         next = this.addRenderableWidget(Button.builder(Component.literal("→"), button -> { page++; refreshRows(); })
                 .bounds(x + contentWidth - 42, navY, 42, 20).build());
         pathInput = new EditBox(this.font, x, navY + 24, contentWidth, 20,
-                Component.translatable("label.nokhframe.background_path"));
+                Component.translatable("label.nokhframe." + kind.path));
         pathInput.setMaxLength(1024);
-        pathInput.setHint(Component.translatable("label.nokhframe.background_path"));
+        pathInput.setHint(Component.translatable("label.nokhframe." + kind.path));
         this.addRenderableWidget(pathInput);
+        int buttons = kind == Kind.SCENE ? 3 : 2;
+        int buttonWidth = (contentWidth - 4 * (buttons - 1)) / buttons;
         this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.import"), button -> importPath())
-                .bounds(x, navY + 48, contentWidth / 2 - 2, 20).build());
+                .bounds(x, navY + 48, buttonWidth, 20).build());
+        if (kind == Kind.SCENE) {
+            this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.no_scene"), button -> {
+                parent.clearScene();
+                this.minecraft.setScreen(parent);
+            }).bounds(x + buttonWidth + 4, navY + 48, buttonWidth, 20).build());
+        }
         this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.back"), button -> onClose())
-                .bounds(x + contentWidth / 2 + 2, navY + 48, contentWidth / 2 - 2, 20).build());
+                .bounds(x + contentWidth - buttonWidth, navY + 48, buttonWidth, 20).build());
         refreshRows();
     }
 
@@ -92,7 +121,7 @@ public final class StudioBackgroundScreen extends Screen {
 
     private void choose(int slot) {
         int index = page * pageSize + slot;
-        if (index < filtered.size() && parent.selectBackground(filtered.get(index))) this.minecraft.setScreen(parent);
+        if (index < filtered.size() && select(filtered.get(index))) this.minecraft.setScreen(parent);
     }
 
     private void importPath() {
@@ -100,16 +129,24 @@ public final class StudioBackgroundScreen extends Screen {
         String raw = pathInput.getValue().trim();
         if (raw.length() >= 2 && raw.startsWith("\"") && raw.endsWith("\"")) raw = raw.substring(1, raw.length() - 1);
         try {
-            if (parent.importBackground(Path.of(raw))) this.minecraft.setScreen(parent);
+            if (importFile(Path.of(raw))) this.minecraft.setScreen(parent);
         } catch (InvalidPathException exception) {
-            parent.showCaptureResult(Component.translatable("status.nokhframe.invalid_background_file"));
+            parent.showCaptureResult(Component.translatable("status.nokhframe." + kind.invalid));
         }
+    }
+
+    private boolean select(Path path) {
+        return kind == Kind.SCENE ? parent.selectScene(path) : parent.selectBackground(path);
+    }
+
+    private boolean importFile(Path path) {
+        return kind == Kind.SCENE ? parent.importScene(path) : parent.importBackground(path);
     }
 
     @Override
     public void onFilesDrop(List<Path> paths) {
         boolean imported = false;
-        for (Path path : paths) imported |= parent.importBackground(path);
+        for (Path path : paths) imported |= importFile(path);
         if (imported) this.minecraft.setScreen(parent);
     }
 
@@ -119,7 +156,7 @@ public final class StudioBackgroundScreen extends Screen {
         graphics.drawCenteredString(this.font, this.title, this.width / 2, 13, 0xFFFFFFFF);
         graphics.drawCenteredString(this.font, parent.statusMessage(), this.width / 2,
                 this.height - 25, 0xFFE1E8EF);
-        graphics.drawCenteredString(this.font, Component.translatable("label.nokhframe.drop_background"),
+        graphics.drawCenteredString(this.font, Component.translatable("label.nokhframe." + kind.drop),
                 this.width / 2, this.height - 12, 0xFFB8C6D2);
         graphics.drawCenteredString(this.font, Component.literal((page + 1) + " / "
                 + Math.max(1, (filtered.size() + pageSize - 1) / pageSize) + "  ·  " + filtered.size()),

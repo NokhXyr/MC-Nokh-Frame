@@ -3,6 +3,6 @@
   "minVersion": "0.8",
   "package": "NokhXyr.NokhFrame.mixin",
   "compatibilityLevel": "JAVA_21",
-  "client": ["ClientPlayerSkinMixin", "WalkAnimationStateAccessor", "StudioCrouchMixin", "StudioHeldItemMixin", "StudioItemEntityMixin", "StudioPlayerModelRenderMixin", "CameraAccessor", "StudioPerspectiveMixin"],
+  "client": ["ClientPlayerSkinMixin", "WalkAnimationStateAccessor", "StudioCrouchMixin", "StudioHeldItemMixin", "StudioItemEntityMixin", "StudioPlayerModelRenderMixin", "CameraAccessor", "StudioPerspectiveMixin", "StudioCameraMixin"],
   "injectors": {"defaultRequire": 1}
 }

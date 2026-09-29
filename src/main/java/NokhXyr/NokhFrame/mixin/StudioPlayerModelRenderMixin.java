@@ -17,7 +17,7 @@ public abstract class StudioPlayerModelRenderMixin {
             at = @At("HEAD"))
     private void nokhframe$renderMotion(PoseStack pose, VertexConsumer vertices, int light, int overlay,
                                         int color, CallbackInfo info) {
-        if (!StudioAvatarRenderer.isRenderingMotion() || !((Object) this instanceof PlayerModel<?> model)) return;
+        if (!StudioAvatarRenderer.isPosingModel() || !((Object) this instanceof PlayerModel<?> model)) return;
         StudioAvatarRenderer.Motion motion = StudioAvatarRenderer.currentMotion();
         if (motion != StudioAvatarRenderer.Motion.WALK && motion != StudioAvatarRenderer.Motion.RUN
                 && motion != StudioAvatarRenderer.Motion.SNEAK) return;

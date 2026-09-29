@@ -18,6 +18,15 @@ public final class StudioRules {
     private StudioRules() {
     }
 
+    public static final float ATTACK_CYCLE_SECONDS = 1.1F;
+    public static final float ATTACK_SWING_SECONDS = 0.3F;
+
+    /** Vanilla swing progress (0 to 1) for a quick main-hand hit followed by a short rest, repeated. */
+    public static float attackProgress(float seconds) {
+        float phase = seconds % ATTACK_CYCLE_SECONDS;
+        return phase < ATTACK_SWING_SECONDS ? phase / ATTACK_SWING_SECONDS : 0.0F;
+    }
+
     public static int nextBackground(int current) {
         return (current + 1) % BACKGROUNDS.size();
     }
@@ -36,6 +45,55 @@ public final class StudioRules {
 
     public static boolean isSupportedBackgroundSize(int width, int height) {
         return width > 0 && height > 0 && width <= 4096 && height <= 4096;
+    }
+
+    public static final float MIN_ZOOM = 0.08F;
+    public static final float MAX_ZOOM = 3.0F;
+    public static final float MIN_PLAYER_SIZE = 0.25F;
+    public static final float MAX_PLAYER_SIZE = 4.0F;
+    /** Camera distance in blocks for the world view at zoom 1, framing the player like the studio view. */
+    public static final float WORLD_CAMERA_DISTANCE = 3.2F;
+
+    public static float clampZoom(float zoom) {
+        return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom));
+    }
+
+    /** Player size steps by 10 % per wheel notch, snapping to exactly 100 % when it passes close by. */
+    public static float nextPlayerSize(float size, double notches) {
+        float next = (float) (size * Math.pow(1.1, notches));
+        if (Math.abs(next - 1.0F) < 0.03F) next = 1.0F;
+        return Math.max(MIN_PLAYER_SIZE, Math.min(MAX_PLAYER_SIZE, next));
+    }
+
+    public static float worldCameraDistance(float zoom) {
+        return WORLD_CAMERA_DISTANCE / clampZoom(zoom);
+    }
+
+    public static final long MAX_SCENE_BYTES = 16L * 1024L * 1024L;
+    public static final int MAX_STRUCTURE_SIDE = 96;
+    public static final int MAX_STRUCTURE_BLOCKS = 200_000;
+    public static final int MAX_SCENE_ELEMENTS = 20_000;
+    public static final int MAX_SCENE_TEXTURES = 64;
+
+    /** 3D sets: structure-block files and Blockbench projects or Java model exports. */
+    public static boolean isSceneFile(Path path) {
+        String name = path.getFileName().toString().toLowerCase(Locale.ROOT);
+        return name.endsWith(".nbt") || name.endsWith(".bbmodel") || name.endsWith(".json");
+    }
+
+    public static boolean isSupportedStructureSize(int x, int y, int z) {
+        return x > 0 && y > 0 && z > 0 && x <= MAX_STRUCTURE_SIDE && y <= MAX_STRUCTURE_SIDE && z <= MAX_STRUCTURE_SIDE;
+    }
+
+    /**
+     * Height where the player stands in a structure's center column: on top of the first solid block that has
+     * open space above it, so multi-layer floors work and roofs are ignored. An empty column puts the feet at 0.
+     */
+    public static int standingHeight(boolean[] solidColumn) {
+        for (int y = 0; y < solidColumn.length; y++) {
+            if (solidColumn[y] && (y + 1 >= solidColumn.length || !solidColumn[y + 1])) return y + 1;
+        }
+        return 0;
     }
 
     public static OptionalInt parseHexColor(String input) {
