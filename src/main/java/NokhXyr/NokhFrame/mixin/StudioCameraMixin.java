@@ -30,6 +30,6 @@ public abstract class StudioCameraMixin {
         if (orbit == null) return;
         setRotation(orbit.yaw(), orbit.pitch(), orbit.roll());
         setPosition(orbit.target());
-        move(-orbit.distance(), 0.0F, orbit.rightShift());
+        move(-orbit.distance(), orbit.up(), orbit.rightShift());
     }
 }

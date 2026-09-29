@@ -4,7 +4,7 @@
 
 Nokh Frame est un mod client pour Minecraft **1.21.1** et NeoForge **21.1.1 minimum** (branche 21.1.x). Il crée des aperçus photo de votre personnage avec ses cosmétiques actifs, ou de n'importe quel item enregistré par le jeu et les mods.
 
-La version 0.5.8 est compilée avec NeoForge 21.1.1. Les 12 GameTests réussissent sur 21.1.1. Le studio (scènes, taille, zoom, mode Monde) a été vérifié en jeu sur 21.1.1, et le mode Monde avec Iris 1.8.14 + Sodium 0.8.13 et le shaderpack Complementary Reimagined sur 21.1.252.
+La version 0.5.9 est compilée avec NeoForge 21.1.1. Les 14 GameTests réussissent sur 21.1.1. Le studio (scènes, placement, poses, taille, zoom, mode Monde) a été vérifié en jeu sur 21.1.1, et le mode Monde avec Iris 1.8.14 + Sodium 0.8.13 et le shaderpack Complementary Reimagined sur 21.1.252.
 
 [Guide complet en français](docs/USER_GUIDE.fr.md) · [Journal des versions](CHANGELOG.fr.md) · [Captures du jeu](media/screenshots/README.md)
 
@@ -12,7 +12,7 @@ La version 0.5.8 est compilée avec NeoForge 21.1.1. Les 12 GameTests réussisse
 
 ## Utilisation
 
-1. Installer `nokhframe-0.5.8.jar` dans le dossier `mods`, puis lancer Minecraft.
+1. Installer `nokhframe-0.5.9.jar` dans le dossier `mods`, puis lancer Minecraft.
 2. Entrer dans un monde et activer les cosmétiques souhaités.
 3. Saisir **`/nokhframe`** dans le chat pour ouvrir le studio.
 4. Choisir **Joueur** ou **Item**. Le catalogue des items permet une recherche par nom ou identifiant (`modid:item`). Saisir `@nomdumod` pour filtrer par mod, éventuellement avec un nom d'item (`@minecraft épée`). Le bouton **Depuis l'inventaire** copie l'item choisi avec ses composants.
@@ -31,18 +31,32 @@ Les images de fond importées sont copiées dans `config/nokhframe/backgrounds`.
 
 ### Scènes 3D
 
-Le bouton **Scène 3D** (entre les flèches de rotation) ouvre la bibliothèque de décors en relief, affichés autour du joueur et qui tournent avec la caméra. Le fond couleur ou PNG reste visible derrière. Formats acceptés :
+Le bouton **Scène 3D** ouvre la bibliothèque de décors en relief, affichés autour du joueur et qui tournent avec la caméra. Le fond couleur ou PNG reste visible derrière. Formats acceptés :
 
-- **Structure Minecraft `.nbt`** : construire le décor en jeu, puis l'enregistrer avec un bloc de structure (fichier dans `saves/<monde>/generated/<namespace>/structures`). Les blocs de tous les mods installés s'affichent. Le joueur est placé au centre, debout sur le premier sol de la colonne centrale ; le côté des Z croissants (sud) est derrière lui. 96 blocs de côté au maximum.
+- **Structure Minecraft `.nbt`** : construire le décor en jeu, puis l'enregistrer avec un bloc de structure (fichier dans `saves/<monde>/generated/<namespace>/structures`). Les blocs de tous les mods installés s'affichent. Le joueur est placé au centre, debout sur le premier sol de la colonne centrale ; le côté des Z croissants (sud) est derrière lui. 256 blocs de côté et 2 millions de blocs au maximum.
 - **Blockbench `.bbmodel`** (textures intégrées) ou **`.json`** exporté en « Java Block/Item » : les cubes, leurs rotations et celles des groupes sont pris en charge ; les maillages libres (« mesh ») sont ignorés. 16 pixels valent un bloc et l'origine du modèle correspond aux pieds du joueur. Les textures d'un `.json` sont cherchées à côté du fichier, puis dans les packs de ressources chargés.
 
-Ctrl + molette dans l'aperçu change la **taille du joueur** (25 % à 400 %) sans changer la scène ; la molette seule zoome de 8 % à 300 %.
+Ctrl + molette dans l'aperçu change la **taille du joueur** (25 % à 400 %) sans changer la scène ; la molette seule zoome de 8 % à 300 %. Le clic molette glissé déplace la vue.
+
+### Placement
+
+Le bouton **Placement** ouvre une page de réglages avec trois cibles (bouton **Cible**) :
+
+- **Joueur** : position X / Y / Z en blocs (X vers la droite, Y vers le haut, Z en s'éloignant), rotation sur lui-même et taille. La vue suit le joueur : c'est la scène qui se décale. Par exemple, pour l'asseoir sur un trône, montez-le (Y) et reculez-le (Z) jusqu'au siège, puis choisissez la pose **assis**.
+- **Scène** : position, rotation et échelle du décor 3D.
+- **Vue** : décalage de la vue, zoom, rotation et inclinaison.
+
+Le bouton **Pas** règle la distance de chaque clic (1/16, 1/4, 1/2 ou 1 bloc). Sur cette page, les flèches du clavier déplacent sur X et Z, et Page préc./suiv. sur Y. **Réinitialiser** remet la cible choisie à zéro.
+
+### Pose du joueur
+
+Le bouton **Pose** (à côté du mouvement) ouvre l'éditeur de pose, comme pour un porte-armure. Choisissez une pose toute faite (neutre, assis, salut, T-pose, victoire, pointer, penseur, fier, course figée) ou réglez chaque partie : tête, corps, bras et jambes, sur X, Y et Z (5° par clic, 1° avec Maj, 15° avec Ctrl). **Miroir** copie un bras ou une jambe sur le côté opposé. Les armures et cosmétiques qui suivent le modèle du joueur prennent la même pose. La pose **animation** rend la main au mouvement choisi.
 
 ### Mode Monde et shaderpacks
 
 Le bouton **Studio / Monde** (en haut du panneau) choisit le rendu. Les shaderpacks Iris/Oculus ne s'appliquent jamais aux écrans d'interface ; en mode **Monde**, la vraie caméra du jeu tourne autour du joueur (mêmes rotation, zoom et taille) et le rendu du monde, shaderpack compris, devient le fond de la photo. La scène 3D est alors placée dans le monde, à vos pieds, orientée selon votre regard. Choisissez un endroit dégagé : le décor peut traverser le terrain. Le fond couleur ou PNG n'est utilisé qu'en mode Studio, et le mode Monde ne concerne que l'aperçu du joueur.
 
-Les scènes importées sont copiées dans `config/nokhframe/scenes` (16 Mo maximum). Les blocs à rendu spécial (coffres, panneaux, têtes, liquides) ne sont pas encore affichés. Les scènes ne sont pas utilisées en mode Item.
+Les scènes importées sont copiées dans `config/nokhframe/scenes` (125 Mo maximum). Les blocs à rendu spécial (coffres, panneaux, têtes, liquides) ne sont pas encore affichés. Les scènes ne sont pas utilisées en mode Item.
 
 ## Serveurs et permissions
 
@@ -69,13 +83,13 @@ Exécuter les GameTests NeoForge sans interface graphique avec `gradlew.bat runG
 
 Nokh Frame is a client-side mod for Minecraft **1.21.1** and NeoForge **21.1.1 or newer** in the 21.1.x line. It makes photo previews of your character with active cosmetics, or of any item registered by Minecraft and installed mods.
 
-Version 0.5.8 is compiled against NeoForge 21.1.1. All 12 GameTests pass on 21.1.1. The studio (scenes, size, zoom, World mode) was checked in game on 21.1.1, and World mode with Iris 1.8.14 + Sodium 0.8.13 and the Complementary Reimagined shaderpack on 21.1.252.
+Version 0.5.9 is compiled against NeoForge 21.1.1. All 14 GameTests pass on 21.1.1. The studio (scenes, placement, poses, size, zoom, World mode) was checked in game on 21.1.1, and World mode with Iris 1.8.14 + Sodium 0.8.13 and the Complementary Reimagined shaderpack on 21.1.252.
 
 [Full English guide](docs/USER_GUIDE.en.md) · [Changelog](CHANGELOG.md) · [In-game screenshots](media/screenshots/README.md)
 
 ### How to use
 
-1. Put `nokhframe-0.5.8.jar` in the `mods` folder and start Minecraft.
+1. Put `nokhframe-0.5.9.jar` in the `mods` folder and start Minecraft.
 2. Join a world and enable the cosmetics you want to show.
 3. Enter **`/nokhframe`** in chat to open the studio.
 4. Choose **Player** or **Item**. Search the item catalog by display name or registry ID (`modid:item`). Type `@modname` to filter by mod, optionally followed by an item name (`@minecraft sword`). **From inventory** copies the selected stack with its data components.
@@ -94,18 +108,32 @@ Imported background images are copied to `config/nokhframe/backgrounds`. The max
 
 #### 3D scenes
 
-The **3D scene** button (between the rotation arrows) opens the library of 3D sets, shown around the player and rotating with the camera. The color or PNG background stays visible behind. Supported formats:
+The **3D scene** button opens the library of 3D sets, shown around the player and rotating with the camera. The color or PNG background stays visible behind. Supported formats:
 
-- **Minecraft structure `.nbt`**: build the set in game and save it with a structure block (the file goes to `saves/<world>/generated/<namespace>/structures`). Blocks from every installed mod are shown. The player is placed at the center, standing on the first floor of the center column; the positive Z side (south) is behind them. At most 96 blocks per side.
+- **Minecraft structure `.nbt`**: build the set in game and save it with a structure block (the file goes to `saves/<world>/generated/<namespace>/structures`). Blocks from every installed mod are shown. The player is placed at the center, standing on the first floor of the center column; the positive Z side (south) is behind them. At most 256 blocks per side and 2 million blocks.
 - **Blockbench `.bbmodel`** (embedded textures) or **`.json`** exported as "Java Block/Item": cubes with element and group rotations are supported; free meshes are skipped. 16 pixels are one block and the model origin is the player's feet. `.json` textures are looked up next to the file, then in the loaded resource packs.
 
-Ctrl + wheel over the preview changes the **player size** (25 % to 400 %) without resizing the scene; the wheel alone zooms from 8 % to 300 %.
+Ctrl + wheel over the preview changes the **player size** (25 % to 400 %) without resizing the scene; the wheel alone zooms from 8 % to 300 %. Middle-button drag pans the view.
+
+#### Placement
+
+The **Placement** button opens a settings page with three targets (**Target** button):
+
+- **Player**: X / Y / Z position in blocks (X to the right, Y up, Z away from the viewer), rotation and size. The view follows the player, so the scene shifts instead. For example, to seat the player on a throne, raise them (Y) and move them back (Z) onto the seat, then pick the **sitting** pose.
+- **Scene**: position, rotation and scale of the 3D set.
+- **View**: view offset, zoom, rotation and tilt.
+
+**Step** sets the distance per click (1/16, 1/4, 1/2 or 1 block). On this page the arrow keys move along X and Z, and Page Up/Down along Y. **Reset** clears the selected target.
+
+#### Player pose
+
+The **Pose** button (next to the motion) opens the pose editor, like an armor stand. Pick a ready-made pose (neutral, sitting, wave, T-pose, victory, point, thinker, proud, frozen run) or set each part: head, body, arms and legs, on X, Y and Z (5° per click, 1° with Shift, 15° with Ctrl). **Mirror** copies an arm or leg to the opposite side. Armor and cosmetics that follow the player model take the same pose. The **animation** pose hands the limbs back to the selected motion.
 
 #### World mode and shaderpacks
 
 The **Studio / World** button (top of the panel) picks the renderer. Iris/Oculus shaderpacks never apply to GUI screens; in **World** mode the real game camera orbits the player (same rotation, zoom and size) and the world render, shaderpack included, becomes the photo background. The 3D scene is then placed in the world at your feet, turned to match where you face. Pick an open spot: the set can intersect terrain. The color or PNG background is only used in Studio mode, and World mode only applies to the player preview.
 
-Imported scenes are copied to `config/nokhframe/scenes` (16 MB maximum). Blocks with special renderers (chests, signs, heads, liquids) are not shown yet. Scenes are not used in Item mode.
+Imported scenes are copied to `config/nokhframe/scenes` (125 MB maximum). Blocks with special renderers (chests, signs, heads, liquids) are not shown yet. Scenes are not used in Item mode.
 
 ### Servers and permissions
 

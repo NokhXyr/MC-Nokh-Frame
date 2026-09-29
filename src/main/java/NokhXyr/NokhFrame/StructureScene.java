@@ -1,15 +1,10 @@
 package NokhXyr.NokhFrame;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -41,16 +36,10 @@ import java.util.Map;
 
 /** Vanilla structure file ({@code .nbt}, as saved by a structure block) rendered as the studio set. */
 final class StructureScene implements StudioScene {
-    private final List<PlacedBlock> blocks;
-    private final float offsetX;
-    private final float offsetY;
-    private final float offsetZ;
+    private final SceneMesh mesh;
 
-    private StructureScene(List<PlacedBlock> blocks, float offsetX, float offsetY, float offsetZ) {
-        this.blocks = blocks;
-        this.offsetX = offsetX;
-        this.offsetY = offsetY;
-        this.offsetZ = offsetZ;
+    private StructureScene(SceneMesh mesh) {
+        this.mesh = mesh;
     }
 
     static StructureScene load(Path path) throws IOException, SceneException {
@@ -100,74 +89,78 @@ final class StructureScene implements StudioScene {
             BlockState state = level.getBlockState(new BlockPos(centerX, y, centerZ));
             column[y] = !state.getCollisionShape(level, new BlockPos(centerX, y, centerZ)).isEmpty();
         }
-        int feet = StudioRules.standingHeight(column);
+        float offsetX = -sizeX / 2.0F;
+        float offsetY = -StudioRules.standingHeight(column);
+        float offsetZ = -sizeZ / 2.0F;
 
-        List<PlacedBlock> placed = new ArrayList<>();
+        SceneMesh mesh = new SceneMesh();
+        SceneMesh.Batch cutout = mesh.batch(Sheets.cutoutBlockSheet());
+        SceneMesh.Batch translucent = mesh.batch(Sheets.translucentCullBlockSheet());
         RandomSource random = RandomSource.create();
         for (Map.Entry<BlockPos, BlockState> entry : states.entrySet()) {
             BlockPos pos = entry.getKey();
             BlockState state = entry.getValue();
             if (state.getRenderShape() != RenderShape.MODEL) continue;
             BakedModel model = minecraft.getBlockRenderer().getBlockModel(state);
-            List<SceneQuad> quads = new ArrayList<>();
+            float x = pos.getX() + offsetX;
+            float y = pos.getY() + offsetY;
+            float z = pos.getZ() + offsetZ;
             long seed = state.getSeed(pos);
             for (RenderType renderType : model.getRenderTypes(state, random.fork(), ModelData.EMPTY)) {
-                boolean translucent = renderType == RenderType.translucent();
+                SceneMesh.Batch batch = renderType == RenderType.translucent() ? translucent : cutout;
                 for (Direction side : Direction.values()) {
                     if (!Block.shouldRenderFace(state, level, pos, side, pos.relative(side))) continue;
                     random.setSeed(seed);
                     for (BakedQuad quad : model.getQuads(state, side, random, ModelData.EMPTY, renderType)) {
-                        quads.add(new SceneQuad(quad, tint(state, level, pos, quad), translucent));
+                        addQuad(batch, quad, tint(state, quad), x, y, z);
                     }
                 }
                 random.setSeed(seed);
                 for (BakedQuad quad : model.getQuads(state, null, random, ModelData.EMPTY, renderType)) {
-                    quads.add(new SceneQuad(quad, tint(state, level, pos, quad), translucent));
+                    addQuad(batch, quad, tint(state, quad), x, y, z);
                 }
             }
-            if (!quads.isEmpty()) placed.add(new PlacedBlock(pos, quads));
         }
-        return new StructureScene(placed, -sizeX / 2.0F, -feet, -sizeZ / 2.0F);
+        if (mesh.isEmpty()) throw new SceneException("status.nokhframe.empty_scene");
+        return new StructureScene(mesh);
     }
 
-    private static int tint(BlockState state, BlockGetter level, BlockPos pos, BakedQuad quad) {
+    private static int tint(BlockState state, BakedQuad quad) {
         if (!quad.isTinted()) return -1;
         // No biome is available outside a world, so tinted blocks use Minecraft's default grass and foliage colors.
-        return Minecraft.getInstance().getBlockColors().getColor(state, null, null, quad.getTintIndex());
+        return 0xFF000000 | Minecraft.getInstance().getBlockColors().getColor(state, null, null, quad.getTintIndex());
+    }
+
+    /** Copies a baked quad (block vertex format: position, color, uv, light, packed normal) into the mesh. */
+    private static void addQuad(SceneMesh.Batch batch, BakedQuad quad, int color, float x, float y, float z) {
+        int[] vertices = quad.getVertices();
+        int stride = vertices.length / 4;
+        Direction face = quad.getDirection();
+        for (int i = 0; i < 4; i++) {
+            int base = i * stride;
+            int packedNormal = vertices[base + 7];
+            float nx = (byte) (packedNormal & 255) / 127.0F;
+            float ny = (byte) (packedNormal >> 8 & 255) / 127.0F;
+            float nz = (byte) (packedNormal >> 16 & 255) / 127.0F;
+            if (nx == 0.0F && ny == 0.0F && nz == 0.0F) {
+                nx = face.getStepX();
+                ny = face.getStepY();
+                nz = face.getStepZ();
+            }
+            batch.vertex(x + Float.intBitsToFloat(vertices[base]), y + Float.intBitsToFloat(vertices[base + 1]),
+                    z + Float.intBitsToFloat(vertices[base + 2]), color,
+                    Float.intBitsToFloat(vertices[base + 4]), Float.intBitsToFloat(vertices[base + 5]), nx, ny, nz);
+        }
     }
 
     @Override
-    public void render(PoseStack pose, MultiBufferSource buffers) {
-        VertexConsumer cutout = buffers.getBuffer(Sheets.cutoutBlockSheet());
-        emit(pose, cutout, false);
-        VertexConsumer translucent = buffers.getBuffer(Sheets.translucentCullBlockSheet());
-        emit(pose, translucent, true);
-    }
-
-    private void emit(PoseStack pose, VertexConsumer consumer, boolean translucent) {
-        for (PlacedBlock block : blocks) {
-            pose.pushPose();
-            pose.translate(block.pos.getX() + offsetX, block.pos.getY() + offsetY, block.pos.getZ() + offsetZ);
-            for (SceneQuad quad : block.quads) {
-                if (quad.translucent != translucent) continue;
-                float red = (quad.color >> 16 & 255) / 255.0F;
-                float green = (quad.color >> 8 & 255) / 255.0F;
-                float blue = (quad.color & 255) / 255.0F;
-                consumer.putBulkData(pose.last(), quad.quad, red, green, blue, 1.0F,
-                        LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
-            }
-            pose.popPose();
-        }
+    public SceneMesh mesh() {
+        return mesh;
     }
 
     @Override
     public void close() {
-    }
-
-    private record PlacedBlock(BlockPos pos, List<SceneQuad> quads) {
-    }
-
-    private record SceneQuad(BakedQuad quad, int color, boolean translucent) {
+        mesh.close();
     }
 
     /** Just enough of a world for face culling and collision shapes. */

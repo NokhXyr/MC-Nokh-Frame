@@ -2,6 +2,13 @@
 
 The version shown here is the mod version. Minecraft and NeoForge versions are listed in the [user guide](docs/USER_GUIDE.en.md).
 
+## 0.5.9 — 29 September 2026
+
+- Added a **Placement** page: move, turn and resize the player and the 3D scene, and pan, zoom, turn or tilt the view, by steps of 1/16 to 1 block (arrow and Page keys supported). The view now follows the player. Middle-button drag pans the view.
+- Added a **Pose** editor: ten ready-made poses (neutral, sitting, wave, T-pose, victory, point, thinker, proud, frozen run) and per-part X/Y/Z angles for the head, body, arms and legs, with mirroring. Works in Studio and World modes.
+- Scene files can now reach 125 MB (256 blocks per side, 2 million blocks). Studio mode draws scenes from GPU buffers built once, so large scenes stay smooth.
+- The motion and Pose buttons share one row; the 3D scene and Placement buttons replace the rotation arrows (rotation is on the Placement page, View target).
+
 ## 0.5.8 — 29 September 2026
 
 - Added the **World** render mode: the real game camera orbits the player so Iris/Oculus shaderpacks render the preview and the photo. The pose, skin, size and 3D scene are applied in the world; the HUD and block outline are hidden.

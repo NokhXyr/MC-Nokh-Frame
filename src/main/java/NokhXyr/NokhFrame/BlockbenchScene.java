@@ -6,18 +6,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -43,9 +37,11 @@ final class BlockbenchScene implements StudioScene {
     private static int nextTextureId;
 
     private final List<TextureBatch> batches;
+    private final SceneMesh mesh;
 
-    private BlockbenchScene(List<TextureBatch> batches) {
+    private BlockbenchScene(List<TextureBatch> batches, SceneMesh mesh) {
         this.batches = batches;
+        this.mesh = mesh;
     }
 
     static BlockbenchScene load(Path path) throws IOException, SceneException {
@@ -72,7 +68,13 @@ final class BlockbenchScene implements StudioScene {
             return batch.vertices.isEmpty();
         });
         if (batches.isEmpty()) throw new SceneException("status.nokhframe.scene_no_elements");
-        return new BlockbenchScene(batches);
+        SceneMesh mesh = new SceneMesh();
+        for (TextureBatch batch : batches) {
+            SceneMesh.Batch geometry = mesh.batch(batch.renderType);
+            for (float[] v : batch.vertices) geometry.vertex(v[0], v[1], v[2], -1, v[3], v[4], v[5], v[6], v[7]);
+            batch.vertices.clear();
+        }
+        return new BlockbenchScene(batches, mesh);
     }
 
     // ---- .bbmodel project -------------------------------------------------------------------------------------
@@ -338,24 +340,13 @@ final class BlockbenchScene implements StudioScene {
     }
 
     @Override
-    public void render(PoseStack pose, MultiBufferSource buffers) {
-        PoseStack.Pose last = pose.last();
-        Matrix4f matrix = last.pose();
-        for (TextureBatch batch : batches) {
-            VertexConsumer consumer = buffers.getBuffer(batch.renderType);
-            for (float[] vertex : batch.vertices) {
-                consumer.addVertex(matrix, vertex[0], vertex[1], vertex[2])
-                        .setColor(-1)
-                        .setUv(vertex[3], vertex[4])
-                        .setOverlay(OverlayTexture.NO_OVERLAY)
-                        .setLight(LightTexture.FULL_BRIGHT)
-                        .setNormal(last, vertex[5], vertex[6], vertex[7]);
-            }
-        }
+    public SceneMesh mesh() {
+        return mesh;
     }
 
     @Override
     public void close() {
+        mesh.close();
         batches.forEach(TextureBatch::release);
         batches.clear();
     }

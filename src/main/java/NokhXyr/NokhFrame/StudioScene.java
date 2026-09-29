@@ -9,10 +9,20 @@ import java.util.Locale;
 
 /**
  * A 3D set rendered around the studio player. Its origin is the player's feet; one unit is one block.
- * Scenes are loaded once and hold their own GPU textures until {@link #close()}.
+ * Scenes are loaded once and hold their own GPU resources until {@link #close()}.
  */
 public interface StudioScene extends AutoCloseable {
-    void render(PoseStack pose, MultiBufferSource buffers);
+    SceneMesh mesh();
+
+    /** World view: streamed through the level buffer source (shaderpack compatible). */
+    default void render(PoseStack pose, MultiBufferSource buffers) {
+        mesh().renderImmediate(pose, buffers);
+    }
+
+    /** Studio view: drawn from cached GPU buffers. */
+    default void renderCached(PoseStack pose) {
+        mesh().renderCached(pose);
+    }
 
     @Override
     void close();

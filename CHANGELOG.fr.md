@@ -2,6 +2,13 @@
 
 La [version anglaise](CHANGELOG.md) contient les mêmes changements.
 
+## 0.5.9 — 29 septembre 2026
+
+- Nouvelle page **Placement** : déplacer, tourner et redimensionner le joueur et la scène 3D, et décaler, zoomer, tourner ou incliner la vue, par pas de 1/16 à 1 bloc (flèches et Page préc./suiv. au clavier). La vue suit maintenant le joueur. Le clic molette glissé déplace la vue.
+- Nouvel éditeur de **Pose** : dix poses toutes faites (neutre, assis, salut, T-pose, victoire, pointer, penseur, fier, course figée) et angles X/Y/Z réglables pour la tête, le corps, les bras et les jambes, avec miroir. Fonctionne en modes Studio et Monde.
+- Les fichiers de scène peuvent atteindre 125 Mo (256 blocs de côté, 2 millions de blocs). Le mode Studio dessine les scènes depuis des tampons GPU construits une fois, pour rester fluide avec les grandes scènes.
+- Les boutons Mouvement et Pose partagent une ligne ; les boutons Scène 3D et Placement remplacent les flèches de rotation (la rotation se trouve dans Placement, cible Vue).
+
 ## 0.5.8 — 29 septembre 2026
 
 - Nouveau mode de rendu **Monde** : la vraie caméra du jeu tourne autour du joueur, pour que les shaderpacks Iris/Oculus s'appliquent à l'aperçu et à la photo. Pose, skin, taille et scène 3D sont appliqués dans le monde ; le HUD et le contour de bloc sont masqués.

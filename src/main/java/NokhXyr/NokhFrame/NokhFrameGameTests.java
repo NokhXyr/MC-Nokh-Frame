@@ -100,7 +100,7 @@ public final class NokhFrameGameTests {
         helper.assertTrue(StudioRules.isSceneFile(Path.of("model.json")), "Java model exports are scenes");
         helper.assertFalse(StudioRules.isSceneFile(Path.of("background.png")), "PNG files belong to the image library");
         helper.assertTrue(StudioRules.isSupportedStructureSize(48, 48, 48), "Structure block maximum size must load");
-        helper.assertFalse(StudioRules.isSupportedStructureSize(97, 4, 4), "Oversized structures are rejected");
+        helper.assertFalse(StudioRules.isSupportedStructureSize(StudioRules.MAX_STRUCTURE_SIDE + 1, 4, 4), "Oversized structures are rejected");
         helper.assertFalse(StudioRules.isSupportedStructureSize(0, 4, 4), "Empty dimensions are rejected");
         helper.succeed();
     }
@@ -130,6 +130,49 @@ public final class NokhFrameGameTests {
         helper.assertTrue(StudioRules.nextPlayerSize(0.25F, -5) == StudioRules.MIN_PLAYER_SIZE, "Player size has a minimum");
         helper.assertTrue(StudioRules.worldCameraDistance(0.5F) == 2 * StudioRules.worldCameraDistance(1.0F),
                 "Zooming out moves the world camera away proportionally");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void placementStepsAndLimits(GameTestHelper helper) {
+        helper.assertTrue(StudioRules.MAX_SCENE_BYTES == 125L * 1024L * 1024L, "Scene files may reach 125 MB");
+        helper.assertTrue(StudioPlacement.move(0.0F, 0.25F) == 0.25F, "A step moves by its distance");
+        helper.assertTrue(StudioPlacement.move(StudioPlacement.MAX_OFFSET, 1.0F) == StudioPlacement.MAX_OFFSET,
+                "Offsets stop at the maximum distance");
+        helper.assertTrue(StudioPlacement.rotate(180.0F, 15.0F) == -165.0F, "Rotation wraps around");
+        helper.assertTrue(StudioPlacement.nextSceneScale(1.1F, -1) == 1.0F, "Scene scale snaps back to 100 %");
+        helper.assertTrue(StudioPlacement.nextSceneScale(StudioPlacement.MIN_SCENE_SCALE, -1) == StudioPlacement.MIN_SCENE_SCALE,
+                "Scene scale has a minimum");
+        helper.assertTrue(StudioPlacement.nextStep(StudioPlacement.STEPS.length - 1) == 0, "Step sizes cycle");
+        StudioPlacement placement = new StudioPlacement();
+        placement.playerX = 2.0F;
+        placement.sceneScale = 3.0F;
+        placement.panY = 1.0F;
+        placement.reset(StudioPlacement.Target.SCENE);
+        helper.assertTrue(placement.sceneScale == 1.0F && placement.playerX == 2.0F && placement.panY == 1.0F,
+                "Reset only affects the selected target");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void posePresetsAndEdits(GameTestHelper helper) {
+        StudioPose pose = new StudioPose();
+        helper.assertFalse(pose.active(), "The studio starts on the motion animation");
+        pose.apply(StudioPose.Preset.SIT);
+        helper.assertTrue(pose.active() && pose.angle(StudioPose.Part.RIGHT_LEG, 0) < -45.0F, "Sitting raises the legs");
+        pose.adjust(StudioPose.Part.HEAD, 1, 20.0F);
+        helper.assertTrue(pose.preset() == StudioPose.Preset.CUSTOM, "Editing a part makes the pose custom");
+        helper.assertTrue(pose.angle(StudioPose.Part.RIGHT_LEG, 0) < -45.0F, "Custom poses keep the preset angles");
+        pose.adjust(StudioPose.Part.HEAD, 0, 1000.0F);
+        helper.assertTrue(pose.angle(StudioPose.Part.HEAD, 0) == StudioPose.MAX_ANGLE, "Angles are limited");
+        pose.apply(StudioPose.Preset.WAVE);
+        pose.mirror(StudioPose.Part.RIGHT_ARM);
+        helper.assertTrue(pose.angle(StudioPose.Part.LEFT_ARM, 2) == -pose.angle(StudioPose.Part.RIGHT_ARM, 2),
+                "Mirroring flips the outward rotation");
+        for (StudioPose.Preset preset : StudioPose.Preset.values()) {
+            pose.apply(preset);
+            helper.assertTrue(pose.nextPreset() != StudioPose.Preset.CUSTOM, "Cycling never lands on custom");
+        }
         helper.succeed();
     }
 

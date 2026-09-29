@@ -17,6 +17,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
@@ -51,6 +52,13 @@ public final class StudioScreen extends Screen {
     private float zoom = 1.0F;
     private float playerSize = 1.0F;
     private boolean worldMode;
+    private final StudioPlacement placement = new StudioPlacement();
+    private StudioPlacement.Target placementTarget = StudioPlacement.Target.PLAYER;
+    private boolean placementPage;
+    private boolean posePage;
+    private final StudioPose studioPose = new StudioPose();
+    private StudioPose.Part posePart = StudioPose.Part.RIGHT_ARM;
+    private int stepIndex = 1;
     private boolean draggingPreview;
     private int dragButton;
     private StudioAvatarRenderer.Motion motion = StudioAvatarRenderer.Motion.IDLE;
@@ -78,6 +86,14 @@ public final class StudioScreen extends Screen {
         int buttonWidth = panelWidth - 16;
         int row = Math.max(21, Math.min(24, (this.height - 82) / 7));
         int y = 66;
+        if (placementPage) {
+            initPlacement(x, y, row, buttonWidth);
+            return;
+        }
+        if (posePage) {
+            initPose(x, y, row, buttonWidth);
+            return;
+        }
 
         int half = (buttonWidth - 4) / 2;
         this.addRenderableWidget(Button.builder(modeLabel(), button -> {
@@ -101,7 +117,13 @@ public final class StudioScreen extends Screen {
             motion = modes[(motion.ordinal() + 1) % modes.length];
             motionStarted = System.nanoTime();
             button.setMessage(motionLabel());
-        }).bounds(x, y + row * 2, buttonWidth, 20).build());
+        }).tooltip(Tooltip.create(Component.translatable("tooltip.nokhframe.motion")))
+                .bounds(x, y + row * 2, half, 20).build());
+        this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.pose"), button -> {
+            posePage = true;
+            rebuildWidgets();
+        }).tooltip(Tooltip.create(Component.translatable("tooltip.nokhframe.pose")))
+                .bounds(x + half + 4, y + row * 2, buttonWidth - half - 4, 20).build());
 
         this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.color"), button -> {
             releaseBackground();
@@ -124,19 +146,221 @@ public final class StudioScreen extends Screen {
         this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.apply"), button -> applyHex())
                 .bounds(x + buttonWidth - applyWidth, y + row * 4, applyWidth, 20).build());
 
-        int arrow = 24;
-        this.addRenderableWidget(Button.builder(Component.literal("←"), button -> yaw -= 30.0F)
-                .tooltip(Tooltip.create(Component.translatable("button.nokhframe.left")))
-                .bounds(x, y + row * 5, arrow, 20).build());
         this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.scene"), button ->
                 this.minecraft.setScreen(new StudioBackgroundScreen(this, StudioBackgroundScreen.Kind.SCENE)))
-                .bounds(x + arrow + 4, y + row * 5, buttonWidth - 2 * arrow - 8, 20).build());
-        this.addRenderableWidget(Button.builder(Component.literal("→"), button -> yaw += 30.0F)
-                .tooltip(Tooltip.create(Component.translatable("button.nokhframe.right")))
-                .bounds(x + buttonWidth - arrow, y + row * 5, arrow, 20).build());
+                .bounds(x, y + row * 5, half, 20).build());
+        this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.placement"), button -> {
+            placementPage = true;
+            rebuildWidgets();
+        }).tooltip(Tooltip.create(Component.translatable("tooltip.nokhframe.placement")))
+                .bounds(x + half + 4, y + row * 5, buttonWidth - half - 4, 20).build());
 
         this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.photo"), button ->
                 captureRequested = true).bounds(x, y + row * 6, buttonWidth, 20).build());
+    }
+
+    /** Placement page: moves, turns and sizes the player, the scene or the view, one step per click. */
+    private void initPlacement(int x, int y, int row, int buttonWidth) {
+        int half = (buttonWidth - 4) / 2;
+        this.addRenderableWidget(Button.builder(targetLabel(), button -> {
+            StudioPlacement.Target[] targets = StudioPlacement.Target.values();
+            placementTarget = targets[(placementTarget.ordinal() + 1) % targets.length];
+            button.setMessage(targetLabel());
+        }).bounds(x, y, half, 20).build());
+        this.addRenderableWidget(Button.builder(stepLabel(), button -> {
+            stepIndex = StudioPlacement.nextStep(stepIndex);
+            button.setMessage(stepLabel());
+        }).tooltip(Tooltip.create(Component.translatable("tooltip.nokhframe.step")))
+                .bounds(x + half + 4, y, buttonWidth - half - 4, 20).build());
+        for (int field = 0; field < PLACEMENT_FIELDS; field++) {
+            final int index = field;
+            int rowY = y + row * (field + 1);
+            this.addRenderableWidget(Button.builder(Component.literal("−"), button -> adjustPlacement(index, -1))
+                    .bounds(x, rowY, 20, 20).build());
+            this.addRenderableWidget(Button.builder(Component.literal("+"), button -> adjustPlacement(index, 1))
+                    .bounds(x + buttonWidth - 20, rowY, 20, 20).build());
+        }
+        this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.reset"), button -> {
+            placement.reset(placementTarget);
+            if (placementTarget == StudioPlacement.Target.PLAYER) playerSize = 1.0F;
+            if (placementTarget == StudioPlacement.Target.VIEW) {
+                yaw = pitch = roll = 0.0F;
+                zoom = 1.0F;
+            }
+            status = Component.translatable("status.nokhframe.placement_reset", targetName());
+        }).bounds(x, y + row * 6, half, 20).build());
+        this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.back"), button -> {
+            placementPage = false;
+            rebuildWidgets();
+        }).bounds(x + half + 4, y + row * 6, buttonWidth - half - 4, 20).build());
+    }
+
+    private static final int PLACEMENT_FIELDS = 5;
+
+    /** Pose page: preset poses, then per-part X/Y/Z rotations (5° per click, Shift 1°, Ctrl 15°). */
+    private void initPose(int x, int y, int row, int buttonWidth) {
+        int half = (buttonWidth - 4) / 2;
+        this.addRenderableWidget(Button.builder(presetLabel(), button -> {
+            studioPose.nextPreset();
+            button.setMessage(presetLabel());
+            status = Component.translatable("status.nokhframe.pose_preset", presetName());
+        }).bounds(x, y, buttonWidth, 20).build());
+        this.addRenderableWidget(Button.builder(partLabel(), button -> {
+            StudioPose.Part[] parts = StudioPose.Part.values();
+            posePart = parts[(posePart.ordinal() + 1) % parts.length];
+            button.setMessage(partLabel());
+        }).bounds(x, y + row, buttonWidth, 20).build());
+        for (int axis = 0; axis < 3; axis++) {
+            final int index = axis;
+            int rowY = y + row * (axis + 2);
+            this.addRenderableWidget(Button.builder(Component.literal("−"), button -> adjustPose(index, -1))
+                    .bounds(x, rowY, 20, 20).build());
+            this.addRenderableWidget(Button.builder(Component.literal("+"), button -> adjustPose(index, 1))
+                    .bounds(x + buttonWidth - 20, rowY, 20, 20).build());
+        }
+        this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.reset_part"), button -> {
+            studioPose.resetPart(posePart);
+            rebuildWidgets();
+        }).bounds(x, y + row * 5, half, 20).build());
+        this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.mirror"), button -> {
+            studioPose.mirror(posePart);
+            rebuildWidgets();
+        }).tooltip(Tooltip.create(Component.translatable("tooltip.nokhframe.mirror")))
+                .bounds(x + half + 4, y + row * 5, buttonWidth - half - 4, 20).build());
+        this.addRenderableWidget(Button.builder(Component.translatable("button.nokhframe.back"), button -> {
+            posePage = false;
+            rebuildWidgets();
+        }).bounds(x, y + row * 6, buttonWidth, 20).build());
+    }
+
+    private void adjustPose(int axis, int direction) {
+        float step = hasShiftDown() ? 1.0F : hasControlDown() ? 15.0F : 5.0F;
+        studioPose.adjust(posePart, axis, step * direction);
+        // The preset button shows "custom" after the first edit.
+        rebuildWidgets();
+    }
+
+    private Component presetLabel() {
+        return Component.translatable("button.nokhframe.pose_preset", presetName());
+    }
+
+    private Component presetName() {
+        return Component.translatable("pose.nokhframe.preset." + studioPose.preset().name().toLowerCase(Locale.ROOT));
+    }
+
+    private Component partLabel() {
+        return Component.translatable("button.nokhframe.pose_part",
+                Component.translatable("pose.nokhframe.part." + posePart.name().toLowerCase(Locale.ROOT)));
+    }
+
+    private Component poseAxis(int axis) {
+        String name = switch (axis) {
+            case 0 -> "x";
+            case 1 -> "y";
+            default -> "z";
+        };
+        return Component.translatable("pose.nokhframe.axis." + name, Math.round(studioPose.angle(posePart, axis)));
+    }
+
+    StudioPose pose() {
+        return studioPose;
+    }
+
+    private Component targetLabel() {
+        return Component.translatable("button.nokhframe.target", targetName());
+    }
+
+    private Component targetName() {
+        return Component.translatable("placement.nokhframe.target." + placementTarget.name().toLowerCase(Locale.ROOT));
+    }
+
+    private Component stepLabel() {
+        return Component.translatable("button.nokhframe.step", formatNumber(StudioPlacement.STEPS[stepIndex]));
+    }
+
+    private static String formatNumber(float value) {
+        String text = String.format(Locale.ROOT, "%.4f", value).replaceAll("0+$", "").replaceAll("\\.$", "");
+        return text.equals("-0") ? "0" : text;
+    }
+
+    /** Label and current value of a placement row, for the selected target. */
+    private Component placementField(int field) {
+        StudioPlacement p = placement;
+        return switch (placementTarget) {
+            case PLAYER -> switch (field) {
+                case 0 -> axis("x", p.playerX);
+                case 1 -> axis("y", p.playerY);
+                case 2 -> axis("z", p.playerZ);
+                case 3 -> Component.translatable("placement.nokhframe.rotation", Math.round(p.playerRotation));
+                default -> Component.translatable("placement.nokhframe.size", Math.round(playerSize * 100.0F));
+            };
+            case SCENE -> switch (field) {
+                case 0 -> axis("x", p.sceneX);
+                case 1 -> axis("y", p.sceneY);
+                case 2 -> axis("z", p.sceneZ);
+                case 3 -> Component.translatable("placement.nokhframe.rotation", Math.round(p.sceneRotation));
+                default -> Component.translatable("placement.nokhframe.scale", Math.round(p.sceneScale * 100.0F));
+            };
+            case VIEW -> switch (field) {
+                case 0 -> axis("pan_x", p.panX);
+                case 1 -> axis("pan_y", -p.panY);
+                case 2 -> Component.translatable("placement.nokhframe.zoom", Math.round(zoom * 100.0F));
+                case 3 -> Component.translatable("placement.nokhframe.rotation", Math.round(yaw));
+                default -> Component.translatable("placement.nokhframe.pitch", Math.round(pitch));
+            };
+        };
+    }
+
+    private static Component axis(String name, float value) {
+        return Component.translatable("placement.nokhframe." + name, formatNumber(value));
+    }
+
+    private void adjustPlacement(int field, int direction) {
+        float step = StudioPlacement.STEPS[stepIndex] * direction;
+        float turn = StudioPlacement.ROTATION_STEP * direction;
+        StudioPlacement p = placement;
+        switch (placementTarget) {
+            case PLAYER -> {
+                switch (field) {
+                    case 0 -> p.playerX = StudioPlacement.move(p.playerX, step);
+                    case 1 -> p.playerY = StudioPlacement.move(p.playerY, step);
+                    case 2 -> p.playerZ = StudioPlacement.move(p.playerZ, step);
+                    case 3 -> p.playerRotation = StudioPlacement.rotate(p.playerRotation, turn);
+                    default -> playerSize = StudioRules.nextPlayerSize(playerSize, direction);
+                }
+            }
+            case SCENE -> {
+                switch (field) {
+                    case 0 -> p.sceneX = StudioPlacement.move(p.sceneX, step);
+                    case 1 -> p.sceneY = StudioPlacement.move(p.sceneY, step);
+                    case 2 -> p.sceneZ = StudioPlacement.move(p.sceneZ, step);
+                    case 3 -> p.sceneRotation = StudioPlacement.rotate(p.sceneRotation, turn);
+                    default -> p.sceneScale = StudioPlacement.nextSceneScale(p.sceneScale, direction);
+                }
+            }
+            case VIEW -> {
+                switch (field) {
+                    case 0 -> p.panX = StudioPlacement.move(p.panX, step);
+                    case 1 -> p.panY = StudioPlacement.move(p.panY, -step);
+                    case 2 -> zoom = StudioRules.clampZoom((float) (zoom * Math.pow(1.12, direction)));
+                    case 3 -> yaw = StudioPlacement.rotate(yaw, turn);
+                    default -> pitch = StudioPlacement.rotate(pitch, turn);
+                }
+            }
+        }
+    }
+
+    StudioPlacement placement() {
+        return placement;
+    }
+
+    /** GUI pixels per block for the player preview, before the player size. */
+    private float stageScale() {
+        int stageRight = this.width - panelWidth();
+        int margin = Math.max(8, stageRight / 15);
+        float entityScale = Minecraft.getInstance().player == null ? 1.0F : Minecraft.getInstance().player.getScale();
+        return Math.round(Math.max(25, Math.min((int) ((this.height - 85) / 2.5F),
+                (stageRight - 2 * margin) / 3)) * zoom) / entityScale;
     }
 
     @Override
@@ -169,7 +393,23 @@ public final class StudioScreen extends Screen {
                     panelLeft + 8, 40, 0xFFB7C3CF, false);
             graphics.drawString(this.font, this.font.plainSubstrByWidth(status.getString(), panelWidth() - 16),
                     panelLeft + 8, this.height - 17, 0xFFDDE5EC, false);
-            Component hint = Component.translatable("label.nokhframe.rotate_hint");
+            if (placementPage) {
+                int row = Math.max(21, Math.min(24, (this.height - 82) / 7));
+                int centerX = panelLeft + panelWidth() / 2;
+                for (int field = 0; field < PLACEMENT_FIELDS; field++) {
+                    String text = this.font.plainSubstrByWidth(placementField(field).getString(), panelWidth() - 64);
+                    graphics.drawCenteredString(this.font, text, centerX, 66 + row * (field + 1) + 6, 0xFFE7EDF3);
+                }
+            }
+            if (posePage) {
+                int row = Math.max(21, Math.min(24, (this.height - 82) / 7));
+                int centerX = panelLeft + panelWidth() / 2;
+                for (int axis = 0; axis < 3; axis++) {
+                    graphics.drawCenteredString(this.font, poseAxis(axis), centerX, 66 + row * (axis + 2) + 6, 0xFFE7EDF3);
+                }
+            }
+            Component hint = Component.translatable(placementPage ? "label.nokhframe.placement_hint"
+                    : posePage ? "label.nokhframe.pose_hint" : "label.nokhframe.rotate_hint");
             int hintWidth = Math.min(stageRight - 16, this.font.width(hint) + 12);
             graphics.fill(8, this.height - 22, 8 + hintWidth, this.height - 6, 0xB0171B22);
             graphics.drawString(this.font, this.font.plainSubstrByWidth(hint.getString(), hintWidth - 10),
@@ -192,7 +432,7 @@ public final class StudioScreen extends Screen {
         try {
             StudioAvatarRenderer.render(graphics, minecraft.player, margin, 8, stageRight - margin,
                     Math.max(80, this.height - 12), scale, yaw, pitch, roll, motion, motionElapsed(),
-                    scene, stageRight, this.height, playerSize);
+                    scene, stageRight, this.height, playerSize, placement, studioPose);
         } finally {
             SkinOverride.end();
         }
@@ -359,7 +599,7 @@ public final class StudioScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if ((button == 0 || button == 1) && mouseX >= 0 && mouseX < this.width - panelWidth()) {
+        if ((button == 0 || button == 1 || button == 2) && mouseX >= 0 && mouseX < this.width - panelWidth()) {
             draggingPreview = true;
             dragButton = button;
             return true;
@@ -370,7 +610,12 @@ public final class StudioScreen extends Screen {
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
         if (draggingPreview && button == dragButton) {
-            if (button == 1 || hasShiftDown()) {
+            if (button == 2) {
+                // Middle drag pans the view; the content follows the cursor.
+                float perBlock = Math.max(1.0F, stageScale());
+                placement.panX = StudioPlacement.move(placement.panX, (float) dragX / perBlock);
+                placement.panY = StudioPlacement.move(placement.panY, (float) dragY / perBlock);
+            } else if (button == 1 || hasShiftDown()) {
                 roll = Mth.wrapDegrees(roll + (float) dragX * 0.8F);
                 pitch = Mth.wrapDegrees(pitch + (float) dragY * 0.8F);
             } else {
@@ -403,6 +648,26 @@ public final class StudioScreen extends Screen {
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (placementPage && getFocused() == null) {
+            // Arrows move along X and Z (away from the viewer), Page Up / Page Down along Y.
+            switch (keyCode) {
+                case GLFW.GLFW_KEY_LEFT -> adjustPlacement(0, -1);
+                case GLFW.GLFW_KEY_RIGHT -> adjustPlacement(0, 1);
+                case GLFW.GLFW_KEY_PAGE_UP -> adjustPlacement(1, 1);
+                case GLFW.GLFW_KEY_PAGE_DOWN -> adjustPlacement(1, -1);
+                case GLFW.GLFW_KEY_UP -> adjustPlacement(2, 1);
+                case GLFW.GLFW_KEY_DOWN -> adjustPlacement(2, -1);
+                default -> {
+                    return super.keyPressed(keyCode, scanCode, modifiers);
+                }
+            }
+            return true;
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     boolean importSkin(Path source) {

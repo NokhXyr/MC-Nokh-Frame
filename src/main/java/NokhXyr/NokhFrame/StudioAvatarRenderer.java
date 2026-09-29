@@ -2,6 +2,8 @@ package NokhXyr.NokhFrame;
 
 import NokhXyr.NokhFrame.mixin.WalkAnimationStateAccessor;
 import com.mojang.blaze3d.platform.Lighting;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.player.LocalPlayer;
@@ -21,14 +23,19 @@ public final class StudioAvatarRenderer {
     private static boolean crouching;
     private static Motion currentMotion = Motion.IDLE;
     private static float motionSeconds;
+    private static @Nullable StudioPose activePose;
 
     private StudioAvatarRenderer() {
     }
 
     public static void render(GuiGraphics graphics, LocalPlayer player, int left, int top, int right, int bottom,
                               int scale, float yaw, float pitch, float roll, Motion motion, float elapsedSeconds,
-                              @Nullable StudioScene scene, int stageRight, int stageBottom, float playerSize) {
+                              @Nullable StudioScene scene, int stageRight, int stageBottom, float playerSize,
+                              StudioPlacement placement, StudioPose studioPose) {
         float entityScale = player.getScale();
+        float stageScale = scale / entityScale;
+        float centerX = (left + right) / 2.0F + placement.panX * stageScale;
+        float centerY = (top + bottom) / 2.0F + placement.panY * stageScale;
         Vector3f translate = new Vector3f(0.0F, player.getBbHeight() / 2.0F + 0.0625F * entityScale, 0.0F);
         Quaternionf camera = new Quaternionf()
                 .rotateY((float) Math.toRadians(yaw))
@@ -37,13 +44,16 @@ public final class StudioAvatarRenderer {
         Quaternionf pose = new Quaternionf().rotateZ((float) Math.PI).mul(camera);
         if (scene != null) {
             // The set fills the whole stage, not just the player's margins.
+            graphics.flush();
             graphics.enableScissor(0, 0, stageRight, stageBottom);
             graphics.pose().pushPose();
             try {
-                applyStageTransform(graphics, left, top, right, bottom, scale / entityScale, translate, pose);
-                Lighting.setupForEntityInInventory();
-                scene.render(graphics.pose(), graphics.bufferSource());
-                graphics.flush();
+                applyStageTransform(graphics, centerX, centerY, stageScale, translate, pose);
+                // The view follows the player: the scene shifts opposite to the player's studio offset.
+                Vector3f standing = scenePoint(placement.playerX, placement.playerY, placement.playerZ);
+                graphics.pose().translate(-standing.x, -standing.y, -standing.z);
+                applyScenePlacement(graphics.pose(), placement);
+                scene.renderCached(graphics.pose());
             } finally {
                 Lighting.setupFor3DItems();
                 graphics.pose().popPose();
@@ -51,18 +61,19 @@ public final class StudioAvatarRenderer {
             }
         }
 
-        // A bigger player keeps its feet on the scene origin: the pre-scale offset shrinks as the scale grows.
-        float playerScale = scale / entityScale * playerSize;
+        // A bigger player keeps its feet on the same spot: the pre-scale offset shrinks as the scale grows.
+        float playerScale = stageScale * playerSize;
         Vector3f playerTranslate = new Vector3f(translate).div(playerSize);
-        graphics.enableScissor(left, top, right, bottom);
-        PoseSnapshot snapshot = PoseSnapshot.apply(player, motion, elapsedSeconds, 180.0F);
+        // A moved player may leave the default margins, so it is clipped to the whole stage like the scene.
+        graphics.enableScissor(0, 0, stageRight, stageBottom);
+        PoseSnapshot snapshot = PoseSnapshot.apply(player, motion, elapsedSeconds, 180.0F + placement.playerRotation, studioPose);
         posingModel = true;
         try {
-            InventoryScreen.renderEntityInInventory(graphics, (left + right) / 2.0F, (top + bottom) / 2.0F,
+            InventoryScreen.renderEntityInInventory(graphics, centerX, centerY,
                     playerScale, playerTranslate, pose, camera, player);
             graphics.pose().pushPose();
             try {
-                applyStageTransform(graphics, left, top, right, bottom, playerScale, playerTranslate, pose);
+                applyStageTransform(graphics, centerX, centerY, playerScale, playerTranslate, pose);
                 OwnedPetPreviewRenderer.render(graphics, player);
                 WorldStagePreviewRenderer.renderBeforeParticles(graphics, player, camera);
                 WorldParticleRenderer.render(graphics, player, camera);
@@ -78,12 +89,28 @@ public final class StudioAvatarRenderer {
     }
 
     /** Same transform as {@link InventoryScreen#renderEntityInInventory}: the origin becomes the player's feet. */
-    private static void applyStageTransform(GuiGraphics graphics, int left, int top, int right, int bottom, float scale,
+    private static void applyStageTransform(GuiGraphics graphics, float centerX, float centerY, float scale,
                                             Vector3f translate, Quaternionf pose) {
-        graphics.pose().translate((left + right) / 2.0F, (top + bottom) / 2.0F, 50.0F);
+        graphics.pose().translate(centerX, centerY, 50.0F);
         graphics.pose().scale(scale, scale, -scale);
         graphics.pose().translate(translate.x, translate.y, translate.z);
         graphics.pose().mulPose(pose);
+    }
+
+    /**
+     * Studio axes to scene coordinates: studio X points right from the default front view, which is the scene's
+     * negative X (the viewer looks at the player's face, towards +Z).
+     */
+    static Vector3f scenePoint(float x, float y, float z) {
+        return new Vector3f(-x, y, z);
+    }
+
+    /** Moves, turns and scales the scene from the player's feet. Shared by the studio and world views. */
+    static void applyScenePlacement(PoseStack pose, StudioPlacement placement) {
+        Vector3f offset = scenePoint(placement.sceneX, placement.sceneY, placement.sceneZ);
+        pose.translate(offset.x, offset.y, offset.z);
+        pose.mulPose(Axis.YP.rotationDegrees(-placement.sceneRotation));
+        pose.scale(placement.sceneScale, placement.sceneScale, placement.sceneScale);
     }
 
     /** Model posing for the local player's own draw call (walk, run and sneak limbs). */
@@ -93,6 +120,10 @@ public final class StudioAvatarRenderer {
 
     public static boolean isPosingModel() {
         return posingModel && renderingMotion;
+    }
+
+    public static @Nullable StudioPose activePose() {
+        return activePose;
     }
 
     public static boolean isRenderingMotion() {
@@ -159,9 +190,11 @@ public final class StudioAvatarRenderer {
             walkPosition = walk.position();
         }
 
-        static PoseSnapshot apply(LocalPlayer player, Motion motion, float elapsedSeconds, float facingYaw) {
+        static PoseSnapshot apply(LocalPlayer player, Motion motion, float elapsedSeconds, float facingYaw,
+                                  @Nullable StudioPose pose) {
             PoseSnapshot snapshot = new PoseSnapshot(player);
             renderingMotion = true;
+            activePose = pose;
             currentMotion = motion;
             motionSeconds = elapsedSeconds;
             crouching = motion == Motion.SNEAK;
@@ -197,6 +230,7 @@ public final class StudioAvatarRenderer {
 
         void restore() {
             renderingMotion = false;
+            activePose = null;
             currentMotion = Motion.IDLE;
             motionSeconds = 0.0F;
             crouching = false;

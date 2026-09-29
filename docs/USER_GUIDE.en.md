@@ -1,10 +1,10 @@
-# User guide — Nokh Frame 0.5.8
+# User guide — Nokh Frame 0.5.9
 
 ## Install and open
 
-Nokh Frame is a **client-side** mod for **Minecraft 1.21.1**. Version 0.5.8 requires **NeoForge 21.1.1 or newer** in the 21.1.x line; older versions cannot load it. The JAR is compiled against NeoForge 21.1.1. Place `nokhframe-0.5.8.jar` in your instance's `mods` folder, then start the game. Cosmetic mods are optional. Installing it on a server as well restricts `/nokhframe` to operators or to the `nokhframe.use` permission (LuckPerms); see the README.
+Nokh Frame is a **client-side** mod for **Minecraft 1.21.1**. Version 0.5.9 requires **NeoForge 21.1.1 or newer** in the 21.1.x line; older versions cannot load it. The JAR is compiled against NeoForge 21.1.1. Place `nokhframe-0.5.9.jar` in your instance's `mods` folder, then start the game. Cosmetic mods are optional. Installing it on a server as well restricts `/nokhframe` to operators or to the `nokhframe.use` permission (LuckPerms); see the README.
 
-Client checks (opening and rendering the studio) passed on NeoForge 21.1.1 and 21.1.252 for 0.5.5. For 0.5.8, all 12 GameTests pass on 21.1.1 and the studio was checked in game on 21.1.1 (World mode with Iris on 21.1.252). Intermediate builds satisfy the declared range but have not each been tested.
+Client checks (opening and rendering the studio) passed on NeoForge 21.1.1 and 21.1.252 for 0.5.5. For 0.5.9, all 14 GameTests pass on 21.1.1 and the studio was checked in game on 21.1.1 (World mode with Iris on 21.1.252). Intermediate builds satisfy the declared range but have not each been tested.
 
 Join a world and type `/nokhframe` in chat. The client command opens the studio for your local player. There is no keybind.
 
@@ -16,7 +16,7 @@ Join a world and type `/nokhframe` in chat. The client command opens the studio 
 4. Choose idle, walk, run, sneak or attack motion.
 5. Drag in the preview to rotate the character. Left drag rotates horizontally and vertically. Right drag or Shift + drag controls the third axis and vertical axis. Scroll to zoom.
 6. Click **Color** to cycle presets, enter `#RRGGBB` and click **Apply**, or use **PNG image** to import and select an image background.
-   **3D scene** (between the rotation arrows) adds a 3D set in front of that background: a `.nbt` structure saved with a structure block, or a Blockbench `.bbmodel` / Java `.json` model. See the README for placement rules.
+   **3D scene** adds a 3D set in front of that background: a `.nbt` structure saved with a structure block, or a Blockbench `.bbmodel` / Java `.json` model. See the README for placement rules.
 7. Click **Take photo**. The capture is saved in the instance's `screenshots` folder.
 
 The name above the character is Minecraft's native name tag. A skin selected in the studio does not change your account skin for other players.

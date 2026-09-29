@@ -16,6 +16,8 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 /**
  * "World" render mode of the studio. Shaderpacks (Iris/Oculus) never process GUI rendering, so instead of drawing
@@ -25,6 +27,8 @@ import org.jetbrains.annotations.Nullable;
 public final class StudioWorldView {
     private static StudioAvatarRenderer.@Nullable PoseSnapshot snapshot;
     private static boolean scaledPlayer;
+    /** The player's real facing this frame; the studio rotation only turns the rendered model. */
+    private static float baseYaw;
 
     private StudioWorldView() {
     }
@@ -45,7 +49,7 @@ public final class StudioWorldView {
                 ? studio : null;
     }
 
-    public record Orbit(float yaw, float pitch, float roll, Vec3 target, float distance, float rightShift) {
+    public record Orbit(float yaw, float pitch, float roll, Vec3 target, float distance, float rightShift, float up) {
     }
 
     /** Camera placement for the current frame, or null when the studio world view is not active. */
@@ -54,10 +58,15 @@ public final class StudioWorldView {
         if (studio == null || entity != Minecraft.getInstance().player) return null;
         LocalPlayer player = (LocalPlayer) entity;
         // Facing the player's front, then turned by the studio drag angles (same directions as the studio view).
-        float yaw = player.yBodyRot + 180.0F - studio.viewYaw();
+        float facing = snapshot != null ? baseYaw : player.yBodyRot;
+        float yaw = facing + 180.0F - studio.viewYaw();
         float pitch = Mth.clamp(-studio.viewPitch(), -89.9F, 89.9F);
+        StudioPlacement placement = studio.placement();
+        // The camera follows the player's studio offset, like the studio view.
+        Vector3f standing = rotationFor(facing).transform(
+                StudioAvatarRenderer.scenePoint(placement.playerX, placement.playerY, placement.playerZ));
         Vec3 target = player.getPosition(partialTick)
-                .add(0.0, player.getBbHeight() / 2.0F + 0.0625F * player.getScale(), 0.0);
+                .add(standing.x, standing.y + player.getBbHeight() / 2.0F + 0.0625F * player.getScale(), standing.z);
         float distance = StudioRules.worldCameraDistance(studio.viewZoom());
         // Keep the player centered in the visible stage rather than the full window (the panel covers the right).
         Minecraft minecraft = Minecraft.getInstance();
@@ -65,7 +74,7 @@ public final class StudioWorldView {
         double halfVertical = Math.toRadians(minecraft.options.fov().get()) / 2.0;
         double visibleWidth = 2.0 * distance * Math.tan(halfVertical) * aspect;
         float rightShift = (float) ((1.0 - studio.stageFraction()) / 2.0 * visibleWidth);
-        return new Orbit(yaw, pitch, studio.viewRoll(), target, distance, rightShift);
+        return new Orbit(yaw, pitch, studio.viewRoll(), target, distance, rightShift - placement.panX, placement.panY);
     }
 
     private static void beginFrame(RenderFrameEvent.Pre event) {
@@ -73,8 +82,9 @@ public final class StudioWorldView {
         if (studio == null || snapshot != null) return;
         LocalPlayer player = Minecraft.getInstance().player;
         studio.beginSkinOverride();
+        baseYaw = player.yBodyRot;
         snapshot = StudioAvatarRenderer.PoseSnapshot.apply(player, studio.previewMotion(), studio.motionElapsed(),
-                player.yBodyRot);
+                baseYaw + studio.placement().playerRotation, studio.pose());
     }
 
     private static void endFrame(RenderFrameEvent.Post event) {
@@ -89,7 +99,11 @@ public final class StudioWorldView {
         if (studio == null || snapshot == null || event.getEntity() != Minecraft.getInstance().player) return;
         StudioAvatarRenderer.setPosingModel(true);
         float size = studio.playerSize();
+        StudioPlacement placement = studio.placement();
+        Vector3f offset = facingRotation().transform(
+                StudioAvatarRenderer.scenePoint(placement.playerX, placement.playerY, placement.playerZ));
         event.getPoseStack().pushPose();
+        event.getPoseStack().translate(offset.x, offset.y, offset.z);
         event.getPoseStack().scale(size, size, size);
         scaledPlayer = true;
     }
@@ -116,12 +130,22 @@ public final class StudioWorldView {
             // Lifted 1 cm so the scene floor does not z-fight with the ground block under the player.
             pose.translate(offset.x, offset.y + 0.01, offset.z);
             // Scenes are authored with +Z behind the player: turn them to match the player's facing.
-            pose.mulPose(Axis.YP.rotationDegrees(180.0F - minecraft.player.yBodyRot));
+            pose.mulPose(facingRotation());
+            StudioAvatarRenderer.applyScenePlacement(pose, studio.placement());
             scene.render(pose, buffers);
             buffers.endBatch();
         } finally {
             pose.popPose();
         }
+    }
+
+    /** Scene space to world space: scenes are authored with +Z behind the player, turned to the player's facing. */
+    private static Quaternionf facingRotation() {
+        return rotationFor(baseYaw);
+    }
+
+    private static Quaternionf rotationFor(float facing) {
+        return Axis.YP.rotationDegrees(180.0F - facing);
     }
 
     private static void hideHud(RenderGuiEvent.Pre event) {

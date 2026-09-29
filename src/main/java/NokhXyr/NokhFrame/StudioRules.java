@@ -69,11 +69,11 @@ public final class StudioRules {
         return WORLD_CAMERA_DISTANCE / clampZoom(zoom);
     }
 
-    public static final long MAX_SCENE_BYTES = 16L * 1024L * 1024L;
-    public static final int MAX_STRUCTURE_SIDE = 96;
-    public static final int MAX_STRUCTURE_BLOCKS = 200_000;
-    public static final int MAX_SCENE_ELEMENTS = 20_000;
-    public static final int MAX_SCENE_TEXTURES = 64;
+    public static final long MAX_SCENE_BYTES = 125L * 1024L * 1024L;
+    public static final int MAX_STRUCTURE_SIDE = 256;
+    public static final int MAX_STRUCTURE_BLOCKS = 2_000_000;
+    public static final int MAX_SCENE_ELEMENTS = 200_000;
+    public static final int MAX_SCENE_TEXTURES = 256;
 
     /** 3D sets: structure-block files and Blockbench projects or Java model exports. */
     public static boolean isSceneFile(Path path) {
