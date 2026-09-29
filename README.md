@@ -4,7 +4,7 @@
 
 Nokh Frame est un mod client pour Minecraft **1.21.1** et NeoForge **21.1.1 minimum** (branche 21.1.x). Il crée des aperçus photo de votre personnage avec ses cosmétiques actifs, ou de n'importe quel item enregistré par le jeu et les mods.
 
-La version 0.5.9 est compilée avec NeoForge 21.1.1. Les 14 GameTests réussissent sur 21.1.1. Le studio (scènes, placement, poses, taille, zoom, mode Monde) a été vérifié en jeu sur 21.1.1, et le mode Monde avec Iris 1.8.14 + Sodium 0.8.13 et le shaderpack Complementary Reimagined sur 21.1.252.
+La version 0.5.10 est compilée avec NeoForge 21.1.1. Les 15 GameTests réussissent sur 21.1.1. Le studio (scènes, placement, poses, taille, zoom, mode Monde, Studio avec shaderpack) a été vérifié en jeu sur 21.1.1, et les modes Monde et Studio avec Iris 1.8.14 + Sodium 0.8.13 et le shaderpack Complementary Reimagined sur 21.1.252.
 
 [Guide complet en français](docs/USER_GUIDE.fr.md) · [Journal des versions](CHANGELOG.fr.md) · [Captures du jeu](media/screenshots/README.md)
 
@@ -12,7 +12,7 @@ La version 0.5.9 est compilée avec NeoForge 21.1.1. Les 14 GameTests réussisse
 
 ## Utilisation
 
-1. Installer `nokhframe-0.5.9.jar` dans le dossier `mods`, puis lancer Minecraft.
+1. Installer `nokhframe-0.5.10.jar` dans le dossier `mods`, puis lancer Minecraft.
 2. Entrer dans un monde et activer les cosmétiques souhaités.
 3. Saisir **`/nokhframe`** dans le chat pour ouvrir le studio.
 4. Choisir **Joueur** ou **Item**. Le catalogue des items permet une recherche par nom ou identifiant (`modid:item`). Saisir `@nomdumod` pour filtrer par mod, éventuellement avec un nom d'item (`@minecraft épée`). Le bouton **Depuis l'inventaire** copie l'item choisi avec ses composants.
@@ -54,7 +54,9 @@ Le bouton **Pose** (à côté du mouvement) ouvre l'éditeur de pose, comme pour
 
 ### Mode Monde et shaderpacks
 
-Le bouton **Studio / Monde** (en haut du panneau) choisit le rendu. Les shaderpacks Iris/Oculus ne s'appliquent jamais aux écrans d'interface ; en mode **Monde**, la vraie caméra du jeu tourne autour du joueur (mêmes rotation, zoom et taille) et le rendu du monde, shaderpack compris, devient le fond de la photo. La scène 3D est alors placée dans le monde, à vos pieds, orientée selon votre regard. Choisissez un endroit dégagé : le décor peut traverser le terrain. Le fond couleur ou PNG n'est utilisé qu'en mode Studio, et le mode Monde ne concerne que l'aperçu du joueur.
+Le bouton **Studio / Monde** (en haut du panneau) choisit le rendu. Les shaderpacks Iris/Oculus ne s'appliquent jamais aux écrans d'interface ; en mode **Monde**, la vraie caméra du jeu tourne autour du joueur (mêmes rotation, zoom et taille) et le rendu du monde, shaderpack compris, devient le fond de la photo. La scène 3D est alors placée dans le monde, à vos pieds, orientée selon votre regard. Choisissez un endroit dégagé : le décor peut traverser le terrain. L'orientation est fixée à l'ouverture du mode Monde, selon votre regard.
+
+**Mode Studio avec shaderpack** : quand un shaderpack Iris/Oculus est actif, le mode Studio passe lui aussi par le rendu du monde pour que le shader s'applique. Le terrain, le ciel, les nuages, la météo, les coffres et autres blocs animés du monde ainsi que les autres créatures (sauf vos animaux) sont masqués ; votre couleur ou votre PNG sert de toile de fond derrière la scène. L'ombre ou la lumière du shader peut légèrement modifier la teinte du fond. Sans shaderpack, le mode Studio reste dessiné comme avant. Le mode Item n'utilise pas les shaders.
 
 Les scènes importées sont copiées dans `config/nokhframe/scenes` (125 Mo maximum). Les blocs à rendu spécial (coffres, panneaux, têtes, liquides) ne sont pas encore affichés. Les scènes ne sont pas utilisées en mode Item.
 
@@ -83,13 +85,13 @@ Exécuter les GameTests NeoForge sans interface graphique avec `gradlew.bat runG
 
 Nokh Frame is a client-side mod for Minecraft **1.21.1** and NeoForge **21.1.1 or newer** in the 21.1.x line. It makes photo previews of your character with active cosmetics, or of any item registered by Minecraft and installed mods.
 
-Version 0.5.9 is compiled against NeoForge 21.1.1. All 14 GameTests pass on 21.1.1. The studio (scenes, placement, poses, size, zoom, World mode) was checked in game on 21.1.1, and World mode with Iris 1.8.14 + Sodium 0.8.13 and the Complementary Reimagined shaderpack on 21.1.252.
+Version 0.5.10 is compiled against NeoForge 21.1.1. All 15 GameTests pass on 21.1.1. The studio (scenes, placement, poses, size, zoom, World mode, Studio with a shaderpack) was checked in game on 21.1.1, and World and Studio modes with Iris 1.8.14 + Sodium 0.8.13 and the Complementary Reimagined shaderpack on 21.1.252.
 
 [Full English guide](docs/USER_GUIDE.en.md) · [Changelog](CHANGELOG.md) · [In-game screenshots](media/screenshots/README.md)
 
 ### How to use
 
-1. Put `nokhframe-0.5.9.jar` in the `mods` folder and start Minecraft.
+1. Put `nokhframe-0.5.10.jar` in the `mods` folder and start Minecraft.
 2. Join a world and enable the cosmetics you want to show.
 3. Enter **`/nokhframe`** in chat to open the studio.
 4. Choose **Player** or **Item**. Search the item catalog by display name or registry ID (`modid:item`). Type `@modname` to filter by mod, optionally followed by an item name (`@minecraft sword`). **From inventory** copies the selected stack with its data components.
@@ -131,7 +133,9 @@ The **Pose** button (next to the motion) opens the pose editor, like an armor st
 
 #### World mode and shaderpacks
 
-The **Studio / World** button (top of the panel) picks the renderer. Iris/Oculus shaderpacks never apply to GUI screens; in **World** mode the real game camera orbits the player (same rotation, zoom and size) and the world render, shaderpack included, becomes the photo background. The 3D scene is then placed in the world at your feet, turned to match where you face. Pick an open spot: the set can intersect terrain. The color or PNG background is only used in Studio mode, and World mode only applies to the player preview.
+The **Studio / World** button (top of the panel) picks the renderer. Iris/Oculus shaderpacks never apply to GUI screens; in **World** mode the real game camera orbits the player (same rotation, zoom and size) and the world render, shaderpack included, becomes the photo background. The 3D scene is then placed in the world at your feet, turned to match where you face. Pick an open spot: the set can intersect terrain. The facing is fixed when World mode starts, from where you look.
+
+**Studio mode with a shaderpack**: while an Iris/Oculus shaderpack is active, Studio mode also goes through the world render so the shader applies. Terrain, sky, clouds, weather, the world's chests and other animated blocks, and other creatures (except your pets) are hidden; your color or PNG becomes a backdrop behind the scene. Shader lighting can slightly shift the backdrop tint. Without a shaderpack, Studio mode is drawn as before. Item mode does not use shaders.
 
 Imported scenes are copied to `config/nokhframe/scenes` (125 MB maximum). Blocks with special renderers (chests, signs, heads, liquids) are not shown yet. Scenes are not used in Item mode.
 

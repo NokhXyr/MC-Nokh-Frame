@@ -2,6 +2,11 @@
 
 The version shown here is the mod version. Minecraft and NeoForge versions are listed in the [user guide](docs/USER_GUIDE.en.md).
 
+## 0.5.10 — 29 September 2026
+
+- Shaderpacks now apply to the **Studio** preview: while an Iris/Oculus shaderpack is active, Studio mode renders through the world pipeline with the terrain, sky, clouds, weather, world block entities and other creatures hidden, and the color or PNG background drawn as a backdrop.
+- Fixed the head twitching and the view drifting in World mode: the facing is now fixed when the mode starts instead of following the body rotation, which Minecraft keeps easing toward the head.
+
 ## 0.5.9 — 29 September 2026
 
 - Added a **Placement** page: move, turn and resize the player and the 3D scene, and pan, zoom, turn or tilt the view, by steps of 1/16 to 1 block (arrow and Page keys supported). The view now follows the player. Middle-button drag pans the view.

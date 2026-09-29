@@ -45,6 +45,13 @@ final class SceneMesh implements AutoCloseable {
         return batch;
     }
 
+    /** Farthest vertex from the origin (the player's feet), in blocks. */
+    float radius() {
+        float max = 0.0F;
+        for (Batch batch : batches) max = Math.max(max, batch.radius);
+        return (float) Math.sqrt(max);
+    }
+
     boolean isEmpty() {
         for (Batch batch : batches) {
             if (batch.floats > 0) return false;
@@ -106,6 +113,8 @@ final class SceneMesh implements AutoCloseable {
         private final RenderType type;
         private float[] data = new float[FLOATS_PER_VERTEX * 256];
         private int floats;
+        /** Squared distance of the farthest vertex. */
+        private float radius;
         private @Nullable VertexBuffer gpu;
         private boolean uploadFailed;
 
@@ -115,6 +124,7 @@ final class SceneMesh implements AutoCloseable {
 
         void vertex(float x, float y, float z, int argb, float u, float v, float nx, float ny, float nz) {
             if (floats + FLOATS_PER_VERTEX > data.length) data = Arrays.copyOf(data, data.length * 2);
+            radius = Math.max(radius, x * x + y * y + z * z);
             data[floats++] = x;
             data[floats++] = y;
             data[floats++] = z;

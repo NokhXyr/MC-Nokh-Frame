@@ -2,6 +2,11 @@
 
 La [version anglaise](CHANGELOG.md) contient les mêmes changements.
 
+## 0.5.10 — 29 septembre 2026
+
+- Les shaderpacks s'appliquent maintenant à l'aperçu **Studio** : quand un shaderpack Iris/Oculus est actif, le mode Studio passe par le rendu du monde en masquant le terrain, le ciel, les nuages, la météo, les blocs animés du monde et les autres créatures, avec la couleur ou le PNG en toile de fond.
+- Correction de la tête qui sautillait et de la vue qui dérivait en mode Monde : l'orientation est maintenant fixée à l'ouverture du mode au lieu de suivre la rotation du corps, que Minecraft ramène peu à peu vers la tête.
+
 ## 0.5.9 — 29 septembre 2026
 
 - Nouvelle page **Placement** : déplacer, tourner et redimensionner le joueur et la scène 3D, et décaler, zoomer, tourner ou incliner la vue, par pas de 1/16 à 1 bloc (flèches et Page préc./suiv. au clavier). La vue suit maintenant le joueur. Le clic molette glissé déplace la vue.

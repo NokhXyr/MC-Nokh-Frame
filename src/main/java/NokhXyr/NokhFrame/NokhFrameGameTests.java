@@ -177,6 +177,14 @@ public final class NokhFrameGameTests {
     }
 
     @GameTest(template = "empty", timeoutTicks = 20)
+    public static void shaderDetectionIsOptional(GameTestHelper helper) {
+        // No Iris/Oculus in the test environment: detection must fail quietly and keep the GUI studio.
+        helper.assertFalse(ShaderSupport.shaderPackInUse(), "Without Iris no shaderpack is reported");
+        helper.assertFalse(ShaderSupport.shaderPackInUse(), "Repeated checks stay stable");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
     public static void attackMotionSwingsThenRests(GameTestHelper helper) {
         helper.assertTrue(StudioRules.attackProgress(0.0F) == 0.0F, "A swing starts from rest");
         helper.assertTrue(StudioRules.attackProgress(StudioRules.ATTACK_SWING_SECONDS / 2) > 0.4F,

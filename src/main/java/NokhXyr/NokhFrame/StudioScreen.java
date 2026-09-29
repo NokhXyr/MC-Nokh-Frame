@@ -52,6 +52,7 @@ public final class StudioScreen extends Screen {
     private float zoom = 1.0F;
     private float playerSize = 1.0F;
     private boolean worldMode;
+    private @Nullable Float worldFacing;
     private final StudioPlacement placement = new StudioPlacement();
     private StudioPlacement.Target placementTarget = StudioPlacement.Target.PLAYER;
     private boolean placementPage;
@@ -103,6 +104,7 @@ public final class StudioScreen extends Screen {
         }).bounds(x, y, half, 20).build());
         this.addRenderableWidget(Button.builder(renderLabel(), button -> {
             worldMode = !worldMode;
+            worldFacing = null;
             button.setMessage(renderLabel());
             status = Component.translatable("status.nokhframe.render." + (worldMode ? "world" : "studio"));
         }).tooltip(Tooltip.create(Component.translatable("tooltip.nokhframe.render_world")))
@@ -450,9 +452,39 @@ public final class StudioScreen extends Screen {
         return (System.nanoTime() - motionStarted) / 1_000_000_000.0F;
     }
 
-    /** True when the player is shown through the real world render (shaderpack compatible) instead of the GUI. */
+    /** Facing used by the world view, fixed the first time it is asked for so the shot does not drift. */
+    float worldFacing(float currentYaw) {
+        if (worldFacing == null) worldFacing = currentYaw;
+        return worldFacing;
+    }
+
+    /**
+     * True when the player is shown through the real world render instead of the GUI: the World mode, or the
+     * Studio mode while a shaderpack is active (shaderpacks never process GUI rendering).
+     */
     boolean worldView() {
-        return worldMode && !itemMode;
+        return !itemMode && (worldMode || ShaderSupport.shaderPackInUse());
+    }
+
+    /** Studio mode drawn through the world pipeline for shaders: the world is hidden behind a studio backdrop. */
+    boolean shaderStudio() {
+        return !itemMode && !worldMode && ShaderSupport.shaderPackInUse();
+    }
+
+    int backdropColor() {
+        return backgroundColor();
+    }
+
+    @Nullable ResourceLocation backdropTexture() {
+        return backgroundTexture;
+    }
+
+    int backdropWidth() {
+        return backgroundWidth;
+    }
+
+    int backdropHeight() {
+        return backgroundHeight;
     }
 
     float viewYaw() {
