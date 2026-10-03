@@ -1,0 +1,37 @@
+# Scouting: open the studio, try the scenes and framings, one still each.
+world nokhstudio 4242 flat
+freeze
+time 6000
+hud off
+notoast on
+size 1600 900
+guiscale 2
+wait 120
+cmd gamerule announceAdvancements false
+studio open
+wait 30
+mouse 1590 880
+status
+shot scout_default
+studio scene arcadia_throne.nbt
+wait 40
+shot scout_throne
+studio scene arcadia_forge.nbt
+wait 40
+shot scout_forge
+studio scene arcadia_atelier.nbt
+wait 40
+shot scout_atelier
+studio scene arcadia_halo.bbmodel
+wait 40
+shot scout_halo
+studio noscene
+studio bg studio.png
+studio pose WAVE
+wait 20
+shot scout_wave
+studio set itemMode true
+studio item minecraft:netherite_sword
+wait 20
+shot scout_item
+quit

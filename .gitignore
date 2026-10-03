@@ -41,3 +41,9 @@ repo/
 
 /extras
 /scripts
+
+# Page images: recording folder, script caches, previews, upload copies
+run-*/
+__pycache__/
+images/preview/
+images/upload/

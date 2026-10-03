@@ -1,0 +1,88 @@
+# Takes 2: the hero turntable (waiting for the recording to end), then the screens for the gallery.
+world nokhstudio 4242 flat
+freeze
+time 6000
+hud off
+notoast on
+size 1600 900
+guiscale 2
+wait 100
+studio open
+wait 20
+mouse 1590 880
+
+studio bg studio.png
+studio scene arcadia_library.nbt
+studio set zoom 0.42
+studio set yaw 32
+studio set pitch -10
+studio place panX 1.5
+studio place panY 0.3
+wait 40
+shot hero_plate
+studio spin 4.5
+record hero 80
+wait 82
+studio spin 0
+studio place playerRotation 0
+wait 5
+shot hero_after
+
+# ---- gallery: the studio with its panel, on the forge set
+studio place panX 0
+studio place panY 0
+studio scene arcadia_forge.nbt
+studio set zoom 0.5
+studio set yaw 30
+studio set pitch -10
+wait 30
+shot gal_studio
+
+# ---- placement page
+click 1504 392
+wait 14
+mouse 1590 880
+wait 6
+shot gal_placement
+click 1504 440
+wait 14
+
+# ---- scene library
+click 1336 392
+wait 14
+mouse 1590 880
+wait 6
+shot gal_scenes
+press ESCAPE
+wait 14
+
+# ---- item catalog, searched by mod
+studio set itemMode true
+studio rebuild
+studio noscene
+studio set zoom 1
+studio set yaw 30
+studio set pitch -15
+wait 6
+click 1420 200
+wait 14
+type @minecraft sword
+wait 10
+mouse 1590 880
+wait 6
+shot gal_catalog
+press ESCAPE
+wait 14
+
+# ---- skin library
+studio set itemMode false
+studio rebuild
+wait 6
+click 1420 200
+wait 14
+mouse 1590 880
+wait 6
+shot gal_skins
+press ESCAPE
+wait 14
+quit

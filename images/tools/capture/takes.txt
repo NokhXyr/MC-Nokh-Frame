@@ -1,0 +1,137 @@
+# Takes: hero turntable, the variants of one photo, the pose editor clicked through.
+world nokhstudio 4242 flat
+freeze
+time 6000
+hud off
+notoast on
+size 1600 900
+guiscale 2
+wait 100
+studio open
+wait 20
+mouse 1590 880
+
+# ---- hero: the player turns on the library set, pushed to the right of the stage
+studio bg studio.png
+studio scene arcadia_library.nbt
+studio set zoom 0.55
+studio set yaw 30
+studio set pitch -10
+studio place panX 1.6
+wait 40
+shot hero_plate
+studio spin 4.5
+record hero 80
+studio spin 0
+studio place playerRotation 0
+studio place panX 0
+
+# ---- variants: one subject, front view
+studio noscene
+studio set zoom 1
+studio set yaw 0
+studio set pitch 0
+studio color #4FC16E
+wait 20
+shot var_color
+studio bg studio.png
+wait 20
+shot var_png
+studio scene arcadia_rift.nbt
+studio set zoom 0.6
+studio set yaw 25
+studio set pitch -10
+wait 30
+shot var_rift
+studio scene arcadia_halo.bbmodel
+studio set zoom 0.85
+studio set yaw 15
+studio set pitch -5
+wait 30
+shot var_halo
+studio scene arcadia_observatory.nbt
+studio pose WAVE
+studio set zoom 0.6
+studio set yaw 30
+studio set pitch -10
+wait 30
+shot var_observatory
+studio pose ANIMATION
+studio noscene
+studio set zoom 1
+studio set yaw 30
+studio set pitch -15
+studio item minecraft:netherite_sword
+wait 20
+shot var_item
+studio item minecraft:totem_of_undying
+wait 20
+shot var_item2
+studio set itemMode false
+studio rebuild
+
+# ---- the pose editor, clicked like a player: atelier set, player pushed right
+studio scene arcadia_atelier.nbt
+studio set zoom 0.6
+studio set yaw 20
+studio set pitch -8
+studio place panX 1.0
+wait 30
+shot pose_0
+click 1504 248
+wait 14
+mouse 1590 880
+wait 6
+shot pose_page
+click 1420 152
+wait 10
+mouse 1590 880
+wait 8
+shot pose_1
+click 1420 152
+wait 10
+mouse 1590 880
+wait 8
+shot pose_2
+click 1420 152
+wait 10
+mouse 1590 880
+wait 8
+shot pose_3
+click 1420 152
+wait 10
+mouse 1590 880
+wait 8
+shot pose_4
+click 1420 152
+wait 10
+mouse 1590 880
+wait 8
+shot pose_5
+click 1420 152
+wait 10
+mouse 1590 880
+wait 8
+shot pose_6
+click 1420 152
+wait 10
+mouse 1590 880
+wait 8
+shot pose_7
+click 1420 152
+wait 10
+mouse 1590 880
+wait 8
+shot pose_8
+click 1420 152
+wait 10
+mouse 1590 880
+wait 8
+shot pose_9
+click 1420 440
+wait 10
+studio pose ANIMATION
+studio place panX 0
+studio noscene
+studio rebuild
+quit

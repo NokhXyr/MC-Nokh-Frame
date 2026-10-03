@@ -1,0 +1,79 @@
+# Scouting 2: three-quarter views of the scenes, the throne seat.
+world nokhstudio 4242 flat
+freeze
+time 6000
+hud off
+notoast on
+size 1600 900
+guiscale 2
+wait 100
+studio open
+wait 20
+mouse 1590 880
+studio bg studio.png
+studio scene arcadia_throne.nbt
+studio set zoom 0.5
+studio set yaw 30
+studio set pitch -12
+wait 30
+shot scout2_throne
+studio scene arcadia_forge.nbt
+studio set zoom 0.5
+studio set yaw 30
+studio set pitch -12
+wait 30
+shot scout2_forge
+studio scene arcadia_atelier.nbt
+studio set zoom 0.5
+studio set yaw 30
+studio set pitch -12
+wait 30
+shot scout2_atelier
+studio scene arcadia_library.nbt
+studio set zoom 0.5
+studio set yaw 30
+studio set pitch -12
+wait 30
+shot scout2_library
+studio scene arcadia_observatory.nbt
+studio set zoom 0.5
+studio set yaw 30
+studio set pitch -12
+wait 30
+shot scout2_observatory
+studio scene arcadia_rift.nbt
+studio set zoom 0.5
+studio set yaw 30
+studio set pitch -12
+wait 30
+shot scout2_rift
+studio scene arcadia_airship.nbt
+studio set zoom 0.5
+studio set yaw 30
+studio set pitch -12
+wait 30
+shot scout2_airship
+studio scene arcadia_clocktower.nbt
+studio set zoom 0.5
+studio set yaw 30
+studio set pitch -12
+wait 30
+shot scout2_clocktower
+studio scene arcadia_throne.nbt
+studio pose SIT
+studio set zoom 0.6
+studio set yaw 20
+studio set pitch -10
+studio place playerY 0.75
+studio place playerZ 1.5
+wait 20
+shot scout2_sit_a
+studio place playerY 1.0
+studio place playerZ 2.0
+wait 20
+shot scout2_sit_b
+studio place playerY 0.5
+studio place playerZ 1.0
+wait 20
+shot scout2_sit_c
+quit

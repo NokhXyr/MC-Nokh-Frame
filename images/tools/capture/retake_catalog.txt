@@ -1,0 +1,25 @@
+# Retake: the item catalog searched by mod (click the search field before typing).
+world nokhstudio 4242 flat
+freeze
+hud off
+notoast on
+size 1600 900
+guiscale 2
+wait 80
+studio open
+wait 20
+studio set itemMode true
+studio rebuild
+wait 6
+click 1420 200
+wait 14
+click 800 88
+wait 4
+type @minecraft sword
+wait 10
+mouse 1590 880
+wait 6
+shot gal_catalog
+press ESCAPE
+wait 10
+quit

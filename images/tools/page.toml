@@ -1,0 +1,160 @@
+# The CurseForge page of Nokh Frame, in one file.
+#
+#   python images/tools/make_banners.py                            the banners (hero, prints, poses)
+#   python images/tools/export_icons.py images/tools/page.toml     the small icons (images/icons)
+#   python images/tools/titles.py images/tools/page.toml           the title ribbons, language labels, divider, badges
+#   python images/tools/build_page.py images/tools/page.toml       the page itself (curseforge_page.md)
+
+[page]
+languages = ["en", "fr"]
+images_base = "https://cdn.jsdelivr.net/gh/NokhXyr/Nokh-Frame@main/images/"
+images_dir = ".."
+out = "../../curseforge_page.md"
+root = "../.."
+theme = "theme.json"
+author = "NokhXyr"
+license = "All Rights Reserved"
+
+[mod]
+name = "Nokh Frame"
+
+[hero]
+file = "hero.gif"
+alt.en = "Nokh Frame: the player turns on itself in the studio, on a 3D library set"
+alt.fr = "Nokh Frame : le joueur tourne sur lui-même dans le studio, sur un décor 3D de bibliothèque"
+
+[links]
+source = "https://github.com/NokhXyr/Nokh-Frame"
+
+[badges]
+minecraft = ["1.21.1"]
+loaders = ["NeoForge"]
+side = "Client"
+  [[badges.extra]]
+  label = "Modpacks"
+  message = "Allowed"
+  icon = "check"
+
+[intro]
+pitch.en = "<strong>Nokh Frame</strong> is a photo studio inside Minecraft. Pose your character with its real cosmetics, or any item, on the backdrop of your choice, and save a clean PNG."
+pitch.fr = "<strong>Nokh Frame</strong> est un studio photo dans Minecraft. Mettez en scène votre personnage avec ses vrais cosmétiques, ou n'importe quel item, sur le fond de votre choix, et enregistrez un PNG propre."
+tagline.en = "Type <code>/nokhframe</code>, pose, click: the photo is ready."
+tagline.fr = "Tapez <code>/nokhframe</code>, posez, cliquez : la photo est prête."
+
+# ------------------------------------------------------------------ sections
+
+[[section]]
+id = "features"
+title.en = "What It Does"
+title.fr = "Ce Qu'il Fait"
+icon = "camera"
+
+  [[section.banner]]
+  file = "prints.gif"
+  alt.en = "Photos of the same player taken in the studio: on a color, on a PNG image, in a 3D scene, in a Blockbench model, then an item, then World mode with a shaderpack"
+  alt.fr = "Photos du même joueur prises dans le studio : sur une couleur, sur une image PNG, dans une scène 3D, dans un modèle Blockbench, puis un item, puis le mode Monde avec un shaderpack"
+
+  [[section.item]]
+  icon = "shirt"
+  name.en = "Your real character"
+  name.fr = "Votre vrai personnage"
+  text.en = "armor, cosmetic layers and your native name tag, as the game draws them."
+  text.fr = "armure, couches cosmétiques et pseudo natif, tels que le jeu les dessine."
+
+  [[section.item]]
+  icon = "sword"
+  name.en = "Any item"
+  name.fr = "N'importe quel item"
+  text.en = "from Minecraft or any mod, searched by name, ID or <code>@mod</code>."
+  text.fr = "de Minecraft ou de tout mod, cherché par nom, identifiant ou <code>@mod</code>."
+
+  [[section.item]]
+  icon = "smile"
+  name.en = "Skin library"
+  name.fr = "Bibliothèque de skins"
+  text.en = "try any 64 × 64 PNG; other players still see your own skin."
+  text.fr = "essayez n'importe quel PNG 64 × 64 ; les autres voient toujours votre skin."
+
+  [[section.item]]
+  icon = "brush"
+  name.en = "Backdrops"
+  name.fr = "Fonds"
+  text.en = "a preset color, any <code>#RRGGBB</code>, or your own PNG image."
+  text.fr = "une couleur prédéfinie, un <code>#RRGGBB</code> ou votre propre image PNG."
+
+[[section]]
+id = "stage"
+title.en = "Set The Scene"
+title.fr = "Mise En Scène"
+icon = "star"
+
+  [[section.banner]]
+  file = "poses.gif"
+  alt.en = "The pose editor: each click on the Pose button gives the player the next ready-made pose, from neutral to frozen run"
+  alt.fr = "L'éditeur de pose : chaque clic sur le bouton Pose donne au joueur la pose suivante, de neutre à course figée"
+
+  [[section.item]]
+  icon = "users"
+  name.en = "Poses"
+  name.fr = "Poses"
+  text.en = "nine ready-made poses, or turn each limb on three axes."
+  text.fr = "neuf poses toutes faites, ou chaque membre réglé sur trois axes."
+
+  [[section.item]]
+  icon = "cube"
+  name.en = "3D sets"
+  name.fr = "Décors 3D"
+  text.en = "<code>.nbt</code> structures and Blockbench models built around the player."
+  text.fr = "structures <code>.nbt</code> et modèles Blockbench construits autour du joueur."
+
+  [[section.item]]
+  icon = "pin"
+  name.en = "Placement"
+  name.fr = "Placement"
+  text.en = "move, turn and resize the player, the set or the view."
+  text.fr = "déplacez, tournez et redimensionnez le joueur, le décor ou la vue."
+
+  [[section.item]]
+  icon = "sun"
+  name.en = "Shaders"
+  name.fr = "Shaders"
+  text.en = "World mode orbits the real camera, so Iris and Oculus shaderpacks apply."
+  text.fr = "le mode Monde fait tourner la vraie caméra : les shaderpacks Iris et Oculus s'appliquent."
+
+[[section]]
+id = "start"
+title.en = "Getting Started"
+title.fr = "Premiers Pas"
+icon = "rocket"
+layout = "steps"
+
+  [[section.item]]
+  text.en = "Put the jar in <code>mods</code>: Minecraft 1.21.1, NeoForge 21.1.1 or newer."
+  text.fr = "Placez le jar dans <code>mods</code> : Minecraft 1.21.1, NeoForge 21.1.1 ou plus récent."
+
+  [[section.item]]
+  text.en = "Join a world and type <code>/nokhframe</code> in chat."
+  text.fr = "Entrez dans un monde et tapez <code>/nokhframe</code> dans le chat."
+
+  [[section.item]]
+  text.en = "Pick Player or Item, a backdrop, a set and a pose."
+  text.fr = "Choisissez Joueur ou Item, un fond, un décor et une pose."
+
+  [[section.item]]
+  text.en = "Click <strong>Take photo</strong>: a clean PNG, without the panel, lands in <code>screenshots</code>."
+  text.fr = "Cliquez sur <strong>Prendre la photo</strong> : un PNG propre, sans le panneau, arrive dans <code>screenshots</code>."
+
+  [[section.item]]
+  text.en = "On a server with the mod, the studio needs operator rights or the <code>nokhframe.use</code> permission."
+  text.fr = "Sur un serveur qui a le mod, le studio demande les droits d'opérateur ou la permission <code>nokhframe.use</code>."
+
+# ------------------------------------------------------------------ after the sections
+
+[support]
+url = "https://github.com/NokhXyr/Nokh-Frame/issues"
+text.en = 'Every option is in the <a href="https://github.com/NokhXyr/Nokh-Frame/blob/main/docs/USER_GUIDE.en.md">user guide</a>. A bug or an idea?'
+text.fr = '''Tout est détaillé dans le <a href="https://github.com/NokhXyr/Nokh-Frame/blob/main/docs/USER_GUIDE.fr.md">guide d'utilisation</a>. Un bug ou une idée ?'''
+link.en = "Open an issue"
+link.fr = "Ouvrez un ticket"
+
+[footer]
