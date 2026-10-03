@@ -7,7 +7,7 @@
 
 [page]
 languages = ["en", "fr"]
-images_base = "https://cdn.jsdelivr.net/gh/NokhXyr/Nokh-Frame@main/images/"
+images_base = "https://cdn.jsdelivr.net/gh/NokhXyr/MC-Nokh-Frame@main/images/"
 images_dir = ".."
 out = "../../curseforge_page.md"
 root = "../.."
@@ -24,7 +24,7 @@ alt.en = "Nokh Frame: the player turns on itself in the studio, on a 3D library 
 alt.fr = "Nokh Frame : le joueur tourne sur lui-même dans le studio, sur un décor 3D de bibliothèque"
 
 [links]
-source = "https://github.com/NokhXyr/Nokh-Frame"
+source = "https://github.com/NokhXyr/MC-Nokh-Frame"
 
 [badges]
 minecraft = ["1.21.1"]
@@ -151,9 +151,9 @@ layout = "steps"
 # ------------------------------------------------------------------ after the sections
 
 [support]
-url = "https://github.com/NokhXyr/Nokh-Frame/issues"
-text.en = 'Every option is in the <a href="https://github.com/NokhXyr/Nokh-Frame/blob/main/docs/USER_GUIDE.en.md">user guide</a>. A bug or an idea?'
-text.fr = '''Tout est détaillé dans le <a href="https://github.com/NokhXyr/Nokh-Frame/blob/main/docs/USER_GUIDE.fr.md">guide d'utilisation</a>. Un bug ou une idée ?'''
+url = "https://github.com/NokhXyr/MC-Nokh-Frame/issues"
+text.en = 'Every option is in the <a href="https://github.com/NokhXyr/MC-Nokh-Frame/blob/main/docs/USER_GUIDE.en.md">user guide</a>. A bug or an idea?'
+text.fr = '''Tout est détaillé dans le <a href="https://github.com/NokhXyr/MC-Nokh-Frame/blob/main/docs/USER_GUIDE.fr.md">guide d'utilisation</a>. Un bug ou une idée ?'''
 link.en = "Open an issue"
 link.fr = "Ouvrez un ticket"
 
